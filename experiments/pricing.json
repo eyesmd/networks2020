@@ -1,0 +1,10 @@
+{
+  "datasets": [{"name": "networks_2019b"}],
+  "experiments": [
+    {
+      "name": "PART",
+      "executable": "networks2019",
+      "time_limit": 7200
+    }
+  ]
+}
