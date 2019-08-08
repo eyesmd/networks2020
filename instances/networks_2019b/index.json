@@ -1,0 +1,217 @@
+[{
+	"file_name": "C203_25_a.json",
+	"instance_name": "C203_25_a",
+	"tags": ["C203_25_a", "N25", "TC2", "C03", "COLa"]
+}, {
+	"file_name": "C203_25_b.json",
+	"instance_name": "C203_25_b",
+	"tags": ["C203_25_b", "N25", "TC2", "C03", "COLb"]
+}, {
+	"file_name": "C203_25_c.json",
+	"instance_name": "C203_25_c",
+	"tags": ["C203_25_c", "N25", "TC2", "C03", "COLc"]
+}, {
+	"file_name": "C204_25_a.json",
+	"instance_name": "C204_25_a",
+	"tags": ["C204_25_a", "N25", "TC2", "C04", "COLa"]
+}, {
+	"file_name": "C204_25_b.json",
+	"instance_name": "C204_25_b",
+	"tags": ["C204_25_b", "N25", "TC2", "C04", "COLb"]
+}, {
+	"file_name": "C204_25_c.json",
+	"instance_name": "C204_25_c",
+	"tags": ["C204_25_c", "N25", "TC2", "C04", "COLc"]
+}, {
+	"file_name": "R207_25_a.json",
+	"instance_name": "R207_25_a",
+	"tags": ["R207_25_a", "N25", "TR2", "C07", "COLa"]
+}, {
+	"file_name": "R207_25_b.json",
+	"instance_name": "R207_25_b",
+	"tags": ["R207_25_b", "N25", "TR2", "C07", "COLb"]
+}, {
+	"file_name": "R207_25_c.json",
+	"instance_name": "R207_25_c",
+	"tags": ["R207_25_c", "N25", "TR2", "C07", "COLc"]
+}, {
+	"file_name": "R208_25_a.json",
+	"instance_name": "R208_25_a",
+	"tags": ["R208_25_a", "N25", "TR2", "C08", "COLa"]
+}, {
+	"file_name": "R208_25_b.json",
+	"instance_name": "R208_25_b",
+	"tags": ["R208_25_b", "N25", "TR2", "C08", "COLb"]
+}, {
+	"file_name": "R208_25_c.json",
+	"instance_name": "R208_25_c",
+	"tags": ["R208_25_c", "N25", "TR2", "C08", "COLc"]
+}, {
+	"file_name": "RC203_25_a.json",
+	"instance_name": "RC203_25_a",
+	"tags": ["RC203_25_a", "N25", "TRC2", "C03", "COLa"]
+}, {
+	"file_name": "RC203_25_b.json",
+	"instance_name": "RC203_25_b",
+	"tags": ["RC203_25_b", "N25", "TRC2", "C03", "COLb"]
+}, {
+	"file_name": "RC203_25_c.json",
+	"instance_name": "RC203_25_c",
+	"tags": ["RC203_25_c", "N25", "TRC2", "C03", "COLc"]
+}, {
+	"file_name": "RC204_25_a.json",
+	"instance_name": "RC204_25_a",
+	"tags": ["RC204_25_a", "N25", "TRC2", "C04", "COLa"]
+}, {
+	"file_name": "RC204_25_b.json",
+	"instance_name": "RC204_25_b",
+	"tags": ["RC204_25_b", "N25", "TRC2", "C04", "COLb"]
+}, {
+	"file_name": "RC204_25_c.json",
+	"instance_name": "RC204_25_c",
+	"tags": ["RC204_25_c", "N25", "TRC2", "C04", "COLc"]
+}, {
+	"file_name": "RC208_25_a.json",
+	"instance_name": "RC208_25_a",
+	"tags": ["RC208_25_a", "N25", "TRC2", "C08", "COLa"]
+}, {
+	"file_name": "RC208_25_b.json",
+	"instance_name": "RC208_25_b",
+	"tags": ["RC208_25_b", "N25", "TRC2", "C08", "COLb"]
+}, {
+	"file_name": "RC208_25_c.json",
+	"instance_name": "RC208_25_c",
+	"tags": ["RC208_25_c", "N25", "TRC2", "C08", "COLc"]
+}, {
+	"file_name": "C104_50_a.json",
+	"instance_name": "C104_50_a",
+	"tags": ["C104_50_a", "N50", "TC1", "C04", "COLa"]
+}, {
+	"file_name": "C104_50_b.json",
+	"instance_name": "C104_50_b",
+	"tags": ["C104_50_b", "N50", "TC1", "C04", "COLb"]
+}, {
+	"file_name": "C104_50_c.json",
+	"instance_name": "C104_50_c",
+	"tags": ["C104_50_c", "N50", "TC1", "C04", "COLc"]
+}, {
+	"file_name": "R104_50_a.json",
+	"instance_name": "R104_50_a",
+	"tags": ["R104_50_a", "N50", "TR1", "C04", "COLa"]
+}, {
+	"file_name": "R104_50_b.json",
+	"instance_name": "R104_50_b",
+	"tags": ["R104_50_b", "N50", "TR1", "C04", "COLb"]
+}, {
+	"file_name": "R104_50_c.json",
+	"instance_name": "R104_50_c",
+	"tags": ["R104_50_c", "N50", "TR1", "C04", "COLc"]
+}, {
+	"file_name": "C203_50_a.json",
+	"instance_name": "C203_50_a",
+	"tags": ["C203_50_a", "N50", "TC2", "C03", "COLa"]
+}, {
+	"file_name": "C203_50_b.json",
+	"instance_name": "C203_50_b",
+	"tags": ["C203_50_b", "N50", "TC2", "C03", "COLb"]
+}, {
+	"file_name": "C203_50_c.json",
+	"instance_name": "C203_50_c",
+	"tags": ["C203_50_c", "N50", "TC2", "C03", "COLc"]
+}, {
+	"file_name": "C207_50_a.json",
+	"instance_name": "C207_50_a",
+	"tags": ["C207_50_a", "N50", "TC2", "C07", "COLa"]
+}, {
+	"file_name": "C207_50_b.json",
+	"instance_name": "C207_50_b",
+	"tags": ["C207_50_b", "N50", "TC2", "C07", "COLb"]
+}, {
+	"file_name": "C207_50_c.json",
+	"instance_name": "C207_50_c",
+	"tags": ["C207_50_c", "N50", "TC2", "C07", "COLc"]
+}, {
+	"file_name": "RC202_50_a.json",
+	"instance_name": "RC202_50_a",
+	"tags": ["RC202_50_a", "N50", "TRC2", "C02", "COLa"]
+}, {
+	"file_name": "RC202_50_b.json",
+	"instance_name": "RC202_50_b",
+	"tags": ["RC202_50_b", "N50", "TRC2", "C02", "COLb"]
+}, {
+	"file_name": "RC202_50_c.json",
+	"instance_name": "RC202_50_c",
+	"tags": ["RC202_50_c", "N50", "TRC2", "C02", "COLc"]
+}, {
+	"file_name": "RC207_50_a.json",
+	"instance_name": "RC207_50_a",
+	"tags": ["RC207_50_a", "N50", "TRC2", "C07", "COLa"]
+}, {
+	"file_name": "RC207_50_b.json",
+	"instance_name": "RC207_50_b",
+	"tags": ["RC207_50_b", "N50", "TRC2", "C07", "COLb"]
+}, {
+	"file_name": "RC207_50_c.json",
+	"instance_name": "RC207_50_c",
+	"tags": ["RC207_50_c", "N50", "TRC2", "C07", "COLc"]
+}, {
+	"file_name": "C103_100_a.json",
+	"instance_name": "C103_100_a",
+	"tags": ["C103_100_a", "N100", "TC1", "C03", "COLa"]
+}, {
+	"file_name": "C103_100_b.json",
+	"instance_name": "C103_100_b",
+	"tags": ["C103_100_b", "N100", "TC1", "C03", "COLb"]
+}, {
+	"file_name": "C103_100_c.json",
+	"instance_name": "C103_100_c",
+	"tags": ["C103_100_c", "N100", "TC1", "C03", "COLc"]
+}, {
+	"file_name": "R104_100_a.json",
+	"instance_name": "R104_100_a",
+	"tags": ["R104_100_a", "N100", "TR1", "C04", "COLa"]
+}, {
+	"file_name": "R104_100_b.json",
+	"instance_name": "R104_100_b",
+	"tags": ["R104_100_b", "N100", "TR1", "C04", "COLb"]
+}, {
+	"file_name": "R104_100_c.json",
+	"instance_name": "R104_100_c",
+	"tags": ["R104_100_c", "N100", "TR1", "C04", "COLc"]
+}, {
+	"file_name": "R108_100_a.json",
+	"instance_name": "R108_100_a",
+	"tags": ["R108_100_a", "N100", "TR1", "C08", "COLa"]
+}, {
+	"file_name": "R108_100_b.json",
+	"instance_name": "R108_100_b",
+	"tags": ["R108_100_b", "N100", "TR1", "C08", "COLb"]
+}, {
+	"file_name": "R108_100_c.json",
+	"instance_name": "R108_100_c",
+	"tags": ["R108_100_c", "N100", "TR1", "C08", "COLc"]
+}, {
+	"file_name": "RC108_100_a.json",
+	"instance_name": "RC108_100_a",
+	"tags": ["RC108_100_a", "N100", "TRC1", "C08", "COLa"]
+}, {
+	"file_name": "RC108_100_b.json",
+	"instance_name": "RC108_100_b",
+	"tags": ["RC108_100_b", "N100", "TRC1", "C08", "COLb"]
+}, {
+	"file_name": "RC108_100_c.json",
+	"instance_name": "RC108_100_c",
+	"tags": ["RC108_100_c", "N100", "TRC1", "C08", "COLc"]
+}, {
+	"file_name": "C206_100_a.json",
+	"instance_name": "C206_100_a",
+	"tags": ["C206_100_a", "N100", "TC2", "C06", "COLa"]
+}, {
+	"file_name": "C206_100_b.json",
+	"instance_name": "C206_100_b",
+	"tags": ["C206_100_b", "N100", "TC2", "C06", "COLb"]
+}, {
+	"file_name": "C206_100_c.json",
+	"instance_name": "C206_100_c",
+	"tags": ["C206_100_c", "N100", "TC2", "C06", "COLc"]
+}]
