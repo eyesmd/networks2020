@@ -18,7 +18,13 @@ include_directories("include/")
 add_subdirectory(goc)
 include_directories(goc/include)
 
-# Create binaries.
-add_executable(networks2019 src/main.cpp src/vrp_instance.cpp src/preprocess_capacity.cpp src/preprocess_time_windows.cpp src/preprocess_service_waiting.cpp src/preprocess_travel_times.cpp src/label.cpp src/monodirectional_labeling.cpp src/lazy_label.cpp src/pwl_domination_function.cpp src/bidirectional_labeling.cpp src/preprocess_triangle_depot.cpp)
+# Create library with source codes.
+add_library(networks2019 src/vrp_instance.cpp src/preprocess_capacity.cpp src/preprocess_time_windows.cpp src/preprocess_service_waiting.cpp src/preprocess_travel_times.cpp src/label.cpp src/monodirectional_labeling.cpp src/lazy_label.cpp src/pwl_domination_function.cpp src/bidirectional_labeling.cpp src/preprocess_triangle_depot.cpp)
 target_link_libraries(networks2019 goc)
-target_link_libraries(networks2019)
+
+# Create binaries.
+add_executable(pricing src/main_pricing.cpp)
+target_link_libraries(pricing networks2019)
+
+add_executable(bp src/main_bp.cpp)
+target_link_libraries(bp networks2019)
