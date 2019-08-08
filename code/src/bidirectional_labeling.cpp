@@ -1,0 +1,210 @@
+//
+// Created by Gonzalo Lera Romero.
+// Grupo de Optimizacion Combinatoria (GOC).
+// Departamento de Computacion - Universidad de Buenos Aires.
+//
+
+#include "bidirectional_labeling.h"
+
+#include <climits>
+
+using namespace std;
+using namespace goc;
+
+namespace networks2019
+{
+namespace
+{
+// Reverses a VRP instance.
+// o' := d
+// d' := o
+// D' := reverse(D)
+// tw'(v) := [T-b(v), T-a(v)]
+// arr'_vu(t) := T-dep_uv(T-t)
+VRPInstance reverse_instance(const VRPInstance& vrp)
+{
+	VRPInstance r = vrp;
+	swap(r.o, r.d);
+	r.D = vrp.D.Reverse();
+	for (Vertex v: r.D.Vertices()) r.tw[v] = {vrp.T - vrp.tw[v].right, vrp.T - vrp.tw[v].left};
+	for (Vertex u: vrp.D.Vertices())
+	{
+		for (Vertex v: vrp.D.Successors(u))
+		{
+			// Compute reverse travel functions.
+			r.arr[v][u] = vrp.T - vrp.dep[u][v].Compose(vrp.T - PWLFunction::IdentityFunction({0.0, vrp.T}));
+			r.tau[v][u] = r.arr[v][u] - PWLFunction::IdentityFunction({0.0, vrp.T});
+			r.dep[v][u] = r.arr[v][u].Inverse();
+			r.pretau[v][u] = PWLFunction::IdentityFunction(dom(r.dep[v][u])) - r.dep[v][u];
+		}
+	}
+	// Add travel functions for (i, i) (for boundary reasons).
+	for (Vertex u: r.D.Vertices())
+	{
+		r.tau[u][u] = r.pretau[u][u] = PWLFunction::ConstantFunction(0.0, r.tw[u]);
+		r.dep[u][u] = r.arr[u][u] = PWLFunction::IdentityFunction(r.tw[u]);
+	}
+	// Set LDT.
+	for (Vertex i: r.D.Vertices())
+	{
+		vector<TimeUnit> LDT_i = compute_latest_departure_time(r.D, i, r.tw[i].right, [&] (Vertex u, Vertex v, double tf) { return r.DepartureTime({u,v}, tf); });
+		for (Vertex k: r.D.Vertices()) r.LDT[k][i] = LDT_i[k];
+	}
+	return r;
+}
+}
+
+BidirectionalLabeling::BidirectionalLabeling()
+{
+	solution_limit = INT_MAX;
+	time_limit = Duration::Max();
+	screen_output = nullptr;
+	closing_state = true;
+}
+
+void BidirectionalLabeling::SetProblem(const VRPInstance& vrp, const vector<ProfitUnit>& profits)
+{
+	vrp_ = vrp;
+	profits_ = profits;
+}
+
+BLBExecutionLog BidirectionalLabeling::Run(vector<Route>* R)
+{
+	// Init forward and backward labeling.
+	MonodirectionalLabeling lbl[2];
+	lbl[0].process_limit = lbl[1].process_limit = 10;
+	lbl[0].SetProblem(vrp_, profits_);
+	lbl[1].SetProblem(reverse_instance(vrp_), profits_);
+	lbl[0].t_m = lbl[1].t_m = vrp_.T;
+	lbl[0].cross = false, lbl[1].cross = true;
+	
+	BLBExecutionLog log(true);
+	Stopwatch rolex(false), merge_rolex(false);
+	
+	// Init queues with initial labels.
+	LBQueue q[2];
+	q[0].push(lbl[0].Init());
+	q[1].push(lbl[1].Init());
+	
+	// Index monodirectional labeling logs by direction.
+	MLBExecutionLog* mlb_log[2] { &*log.forward_log, &*log.backward_log };
+	
+	// Initialize output.
+	TableStream tstream(screen_output, 2.0);
+	tstream.AddColumn("time", 10).AddColumn("fw-time", 10).AddColumn("bw-time", 10).AddColumn("fw-proc", 10).
+		AddColumn("bw-proc", 10).AddColumn("#sol", 6).AddColumn("fw-t_m", 8).AddColumn("bw-t_m", 8).
+		AddColumn("#q-f", 10).AddColumn("#q-b", 10);
+	tstream.WriteHeader();
+	
+	rolex.Resume();
+	
+	// While there are labels to extend, do it.
+	bool processed = true;
+	while (processed)
+	{
+		processed = false;
+		// For each direction of the labeling (0=Forward, 1=Backward).
+		for (int d: {0, 1})
+		{
+			int od = (d+1)%2; // opposite direction.
+			
+			if (q[d].empty()) continue;
+			if (rolex.Peek() >= time_limit) { log.status = BLBStatus::TimeLimitReached; break; } // Check if TLim is reached.
+			if (S.size() >= solution_limit) { log.status = BLBStatus::SolutionLimitReached; break; } // Check if SLim is reached.
+			lbl[d].time_limit = time_limit - rolex.Peek(); // Set time limit.
+			auto P = lbl[d].Run(&q[d], mlb_log[d]);
+			
+			// If iterative-merge is enabled, then try to merge.
+			if (!closing_state)
+			{
+				merge_rolex.Reset().Resume();
+				for (Label* l: P) Process(l, lbl[od].U);
+				*log.merge_time += merge_rolex.Pause();
+			}
+			
+			// Check if any full Forward route was generated.
+			for (Label* l: P)
+				if (d == 0 && l->v == vrp_.d && epsilon_smaller(l->min_cost, 0.0))
+					AddSolution(l->Path(), min(img(l->duration)));
+			
+			// Update t_m.
+			if (q[d].empty()) lbl[d].t_m = vrp_.T - lbl[od].t_m; // If d has no more labels in the queue, the middle is t_m
+			else lbl[od].t_m = min(lbl[od].t_m, max(vrp_.T-lbl[d].t_m, vrp_.T-q[d].top().makespan));
+			
+			// Check if any label was processed.
+			processed |= !P.empty();
+		}
+		
+		// Output to screen.
+		if (tstream.RegisterAttempt() || !processed)
+		{
+			tstream.WriteRow({STR(rolex.Peek()), STR(mlb_log[0]->time), STR(mlb_log[1]->time),
+					 STR(mlb_log[0]->processed_count), STR(mlb_log[1]->processed_count), STR(S.size()),
+					 STR(lbl[0].t_m), STR(vrp_.T-lbl[1].t_m), STR(q[0].size()), STR(q[1].size())});
+		}
+	}
+	
+	// Get all forward lazy labels that are past t_m and try to merge them using last-edge strategy.
+	merge_rolex.Reset().Resume();
+	while (!q[0].empty())
+	{
+		Process(q->top().parent, lbl[1].U, q->top().v);
+		q->pop();
+	}
+	
+	*log.time += rolex.Pause();
+	if (q[0].empty() && q[1].empty()) log.status = BLBStatus::Finished;
+	*log.merge_time += merge_rolex.Pause();
+	
+	// Add solutions from the pool to the return vector R.
+	for (auto& V_r: S)
+	{
+		Route& r = V_r.second;
+		// Compute r actual duration.
+		R->push_back(r);
+	}
+	
+	return log;
+}
+
+void BidirectionalLabeling::Process(Label* l, const MonodirectionalLabeling::DominanceStructure& L, Vertex w)
+{
+	TimeUnit T = vrp_.T;
+	for (auto& demand_entry : L[l->v])
+	{
+		if (S.size() >= solution_limit) break; // Do not exceed solution limit.
+		if (epsilon_bigger(demand_entry.first+l->q-vrp_.q[l->v], vrp_.Q)) break;
+		for (auto& m: demand_entry.second)
+		{
+			if (S.size() >= solution_limit) break; // Do not exceed solution limit.
+			if (epsilon_bigger_equal(m->min_cost+l->min_cost+profits_[l->v], 0.0)) break;
+			if (w != -1 && m->parent->v != w) continue;
+			if (!l->rw.Intersects({T-max(m->rw), T-min(m->rw)})) continue;
+			if (intersection(l->S, m->S) != create_bitset<MAX_N>({l->v})) continue;
+			Route r;
+			// Merge l and m duration functions lm_d(t) = l_d(t) + m_d(T-t).
+			PWLFunction lm_duration = l->duration + m->duration.Compose(T - PWLFunction::IdentityFunction({0.0, T}));
+			if (lm_duration.Empty()) continue;
+			r.duration = min(img(lm_duration));
+			
+			// Merge l and m paths.
+			r.path = l->Path();
+			for (Label* x = m->parent; x->parent != nullptr; x = x->parent) r.path.push_back(x->v);
+			if (r.path[0] != vrp_.o) r.path = reverse(r.path);
+			
+			double merge_cost = r.duration - l->p - m->p + profits_[l->v];
+			if (epsilon_bigger_equal(merge_cost, 0.0)) continue;
+			
+			// We have a negative reduced cost route r.
+			AddSolution(r.path, r.duration);
+		}
+	}
+}
+
+void BidirectionalLabeling::AddSolution(const goc::GraphPath& p, double min_duration)
+{
+	VertexSet V = create_bitset<MAX_N>(p);
+	if (!includes_key(S, V)) S[V] = Route({}, 0.0, INFTY);
+	if (S[V].duration > min_duration) S[V] = Route(p, 0.0, min_duration);
+}
+} // namespace networks2019
