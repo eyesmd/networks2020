@@ -3,7 +3,7 @@
   "experiments": [
     {
       "name": "PART",
-      "executable": "networks2019",
+      "executable": "pricing",
       "time_limit": 7200
     }
   ]
