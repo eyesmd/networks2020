@@ -130,19 +130,13 @@ T& get_or_insert_sorted(const std::vector<T>& v, const T& element, bool ascendin
 	return v[i];
 }
 
-// Adds element to the vector v in its position.
-// Precondition: v is sorted ascendingly.
-template<typename T>
-void insert_sorted(const std::vector<T>& v, const T& element, const std::function<bool(const T&, const T&)>& less_equal)
+// Adds item to the vector vec in its position using the predicate to compare.
+// 	Pred(a, b): returns if item a should go before item b.
+// Precondition: vec is sorted ascendingly.
+template< typename T, typename Pred >
+typename std::vector<T>::iterator insert_sorted( std::vector<T> & vec, T const& item, Pred pred )
 {
-	v.push_back(element);
-	int i;
-	for (i = (int)v.size()-1; i > 0; --i)
-	{
-		if (v[i] > v[i-1]) break;
-		swap(v[i], v[i-1]);
-	}
-	return v[i];
+	return vec.insert(std::upper_bound(vec.begin(), vec.end(), item, pred), item);
 }
 
 // Precondition: Type T must have the != operator implemented.

@@ -45,13 +45,7 @@ bool PWLDominationFunction::DominatePieces(const PWLFunction& f2, double delta)
 	
 	// Check domination if functions are points.
 	if (f2.Domain().IsPoint() && !f1.Domain().IsPoint()) return false;
-	if (f1.Domain().IsPoint())
-	{
-		double f2_val =  f2.Value(min(dom(f2))) + delta + min(dom(f2))-f1.Domain().right;
-		if (epsilon_smaller_equal(f2_val, f1.pieces_[first_].image.left)) { first_ = -1; size_ = 0; }
-		return first_ == -1;
-	}
-	
+
 	// Piece to add to the final of f2 with waiting time to include all f1's domain.
 	double f2_last_duration = f2.LastPiece().Value(f2.Domain().right);
 	auto completion_piece = LinearFunction(
@@ -64,20 +58,21 @@ bool PWLDominationFunction::DominatePieces(const PWLFunction& f2, double delta)
 	while (i1 != -1 && i2 <= f2.PieceCount())
 	{
 		auto& p1 = f1.pieces_[i1];
-		
-		// Search first piece in f2 that ends after the begining of p1.
-		for (; i2 < f2.PieceCount(); i2 = ++i2)
-			if (epsilon_bigger_equal(f2.Piece(i2).domain.right, p1.domain.left))
-				break;
-		
 		auto& p2 = i2 == f2.PieceCount() ? completion_piece : f2.Piece(i2);
+		
+		// If p2 = [ .... ] --nointersection- [ ....] = p1, move p2 forward.
+		if (epsilon_smaller(max(dom(p2)), min(dom(p1)))) { ++i2; continue; }
 		
 		// If p1 = [ .... ] --nointersection- [ .... ] = p2, move p1 forward.
 		if (epsilon_smaller(p1.domain.right, p2.domain.left)) { prev_i1 = i1; i1 = next_[i1]; continue; }
 		
-		// If p2 intersects p1 exactly at the end, and p1 is not a point (min(dom(p1))==max(dom(p1)) then it makes
+		// If p2 intersects p1 exactly at the end, and p1 is not a point then it makes
 		// no sense in attempting domination.
-		if (epsilon_equal(p1.domain.right, p2.domain.left) && epsilon_smaller(p1.domain.left, p2.domain.left)) { prev_i1 = i1; i1 = next_[i1]; continue; }
+		if (epsilon_equal(p1.domain.right, p2.domain.left) && !p1.domain.IsPoint()) { prev_i1 = i1; i1 = next_[i1]; continue; }
+		
+		// If p2 intersects p1 exactly at the begining, and p1 is not a point then it makes
+		// no sense in attempting domination.
+		if (epsilon_equal(p2.domain.left, p1.domain.right) && !p1.domain.IsPoint()) { ++i2; continue; }
 		
 		// Now we have intersection between p1 and p2, we call it [l, r].
 		double l = max(p1.domain.left, p2.domain.left);

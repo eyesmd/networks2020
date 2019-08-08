@@ -200,9 +200,7 @@ int MonodirectionalLabeling::CorrectionStep(Label* l) const
 
 void MonodirectionalLabeling::ProcessStep(Label* l)
 {
-	auto& bucket = U[l->v].Insert(floor(l->q), {});
-	bucket.push_back(l);
-	sort(bucket.begin(), bucket.end(), [] (Label* l1, Label* l2) { return l1->min_cost < l2->min_cost; });
+	insert_sorted(U[l->v].Insert(floor(l->q), {}), l, [] (Label* l1, Label* l2) { return l1->min_cost < l2->min_cost; });
 }
 
 vector<LazyLabel> MonodirectionalLabeling::EnumerationStep(Label* l) const
