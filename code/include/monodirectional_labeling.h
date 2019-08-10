@@ -15,6 +15,7 @@
 #include "vrp_instance.h"
 #include "label.h"
 #include "lazy_label.h"
+#include "pricing_problem.h"
 
 namespace networks2019
 {
@@ -42,12 +43,12 @@ public:
 	DominanceStructure U; // Indexed by last vertex, demand and sorted by c_min.
 	int processed_count; // Number of labels in the dominance structure.
 	
-	MonodirectionalLabeling();
+	MonodirectionalLabeling(const VRPInstance& vrp);
 	
 	~MonodirectionalLabeling();
 	
 	// Sets the problem to use for the labeling algorithm.
-	void SetProblem(const VRPInstance& vrp, const std::vector<ProfitUnit>& profits);
+	void SetProblem(const PricingProblem& pricing_problem);
 	
 	// Runs the labeling algorithm using the labels in the queue q, and outputs the execution information on log.
 	// Returns: a vector of the labels that were not dominated (processed) during the proccess and time limits.
@@ -78,8 +79,11 @@ private:
 	// Returns: the feasible extensions
 	std::vector<LazyLabel> EnumerationStep(Label* l) const;
 	
+	// Resets the dominance structures and counters.
+	void Clean();
+	
 	VRPInstance vrp_;
-	std::vector<ProfitUnit> profits_;
+	PricingProblem pp_;
 	Label no_label; // null object pattern of the label to avoid using ifs.
 };
 } // namespace networks2019

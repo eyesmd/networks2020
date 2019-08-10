@@ -13,6 +13,7 @@
 #include "goc/goc.h"
 
 #include "vrp_instance.h"
+#include "pricing_problem.h"
 #include "label.h"
 #include "lazy_label.h"
 #include "monodirectional_labeling.h"
@@ -26,27 +27,30 @@ public:
 	goc::Duration time_limit; // Maximum execution time.
 	std::ostream* screen_output; // Output log to this stream (if nullptr, then no output is available).
 	bool closing_state; // true if Closing state (last-edge merge), false if Opening state (iterative merge).
+	int merge_start; // after <merge_start> forward labels have been processed, start iterative-merge.
 	
-	BidirectionalLabeling();
-	
-	// Sets the problem to use for the labeling algorithm.
-	void SetProblem(const VRPInstance& vrp, const std::vector<ProfitUnit>& profits);
+	BidirectionalLabeling(const VRPInstance& vrp);
 	
 	// Runs the bidirectional labeling algorithm and leaves the negative reduced cost routes on the parameter R.
 	// Returns: the execution information log.
-	goc::BLBExecutionLog Run(std::vector<goc::Route>* R);
+	goc::BLBExecutionLog Run(const PricingProblem& pricing_problem, std::vector<goc::Route>* R);
 
 private:
 	// Attempts to merge label l against all the labels in the opposite direction dominance structure.
 	// 	w: 	l will be merged with all labels m in L such that v(m) == v(l) and v(parent(m)) == w.
 	// 		if w == -1, then the check v(parent(m)) == w is ignored.
-	void Process(Label* l, const MonodirectionalLabeling::DominanceStructure& L, goc::Vertex w=-1);
+	void IterativeMerge(Label* l, const MonodirectionalLabeling::DominanceStructure& L);
+	
+	void LastEdgeMerge(LBQueue& qf, const MonodirectionalLabeling::DominanceStructure& Lb);
+	
+	void Merge(Label* l, Label* m);
 	
 	// Adds a solution to the pool S if it is the best yet found with those visited vertices.
 	void AddSolution(const goc::GraphPath& p, double min_duration);
 	
 	VRPInstance vrp_;
-	std::vector<ProfitUnit> profits_;
+	PricingProblem pp_;
+	MonodirectionalLabeling lbl_[2]; // lbl_[0] = forward, lbl_[1] = backward.
 	
 	// Pool of negative reduced cost solutions found (indexed by their visited vertices).
 	// We only keep the best solution for each set of visited vertices.

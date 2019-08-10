@@ -57,12 +57,12 @@ public:
 	TimeUnit DepartureTime(goc::Arc e, TimeUnit tf) const;
 	
 	// Returns: the time we finish visiting the last vertex if departing at t0.
-	// If infeasible, returns INFTY.
+	// If infeasible, returns a route with empty path and INFTY duration.
 	TimeUnit ReadyTime(const goc::GraphPath& p, TimeUnit t0=0) const;
-	
-	// Returns: the path minimum duration if feasible, INFTY otherwise.
-	// Leaves in dep the best departure time to have that duration.
-	TimeUnit Duration(const goc::GraphPath& p, TimeUnit* dep) const;
+
+	// Returns: the route with minimum duration using path p.
+	// If the route is infeasible it returns INFTY.
+	goc::Route BestDurationRoute(const goc::GraphPath& p) const;
 	
 	// Returns: a set of all vertices which are unreachable if departing from v at t0.
 	VertexSet Unreachable(goc::Vertex v, TimeUnit t0) const;

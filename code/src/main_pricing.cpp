@@ -35,7 +35,7 @@ int main()
 {
 	json output; // STDOUT output will go into this JSON.
 	
-	simulate_input_in_debug("instances/networks_2019b", "C207_50_b", "experiments/pricing.json", "PART");
+	simulate_input_in_debug("instances/networks_2019b", "C203_25_a", "experiments/pricing.json", "PART");
 	
 	json experiment, instance, solutions;
 	cin >> experiment >> instance >> solutions;
@@ -57,14 +57,15 @@ int main()
 	// Parse instance.
 	VRPInstance vrp = instance;
 	
-	// Read profits if present.
-	vector<ProfitUnit> profits(instance["profits"].begin(), instance["profits"].end());
+	// Read pricing problem.
+	PricingProblem pp;
+	pp.P = vector<ProfitUnit>(instance["profits"].begin(), instance["profits"].end());
+	
 	clog << "Running pricing algorithm..." << endl;
-	BidirectionalLabeling lbl;
+	BidirectionalLabeling lbl(vrp);
 	lbl.screen_output = &clog;
-	lbl.SetProblem(vrp, profits);
 	vector<Route> R;
-	BLBExecutionLog log = lbl.Run(&R);
+	BLBExecutionLog log = lbl.Run(pp, &R);
 	
 	clog << "Total time: " << log.time << endl;
 	// Get best route.
@@ -72,14 +73,14 @@ int main()
 	{
 		Route best = R[0];
 		for (auto& r: R)
-			if (r.duration-path_profit(r.path, profits) < best.duration-path_profit(best.path, profits))
+			if (r.duration-path_profit(r.path, pp.P) < best.duration-path_profit(best.path, pp.P))
 				best = r;
 		clog << "Best solution: " << endl;
 		clog << "\tpath: " << best.path << endl;
 		clog << "\tt0: " << best.t0 << endl;
 		clog << "\tduration: " << best.duration << endl;
-		clog << "\tcost: " << best.duration-path_profit(best.path, profits) << endl;
-		output["Best solution"] = VRPSolution(best.duration-path_profit(best.path, profits), {best});
+		clog << "\tcost: " << best.duration-path_profit(best.path, pp.P) << endl;
+		output["Best solution"] = VRPSolution(best.duration-path_profit(best.path, pp.P), {best});
 	}
 	output["Exact"] = log;
 	

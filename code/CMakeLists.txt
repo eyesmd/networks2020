@@ -19,7 +19,7 @@ add_subdirectory(goc)
 include_directories(goc/include)
 
 # Create library with source codes.
-add_library(networks2019 src/vrp_instance.cpp src/preprocess_capacity.cpp src/preprocess_time_windows.cpp src/preprocess_service_waiting.cpp src/preprocess_travel_times.cpp src/label.cpp src/monodirectional_labeling.cpp src/lazy_label.cpp src/pwl_domination_function.cpp src/bidirectional_labeling.cpp src/preprocess_triangle_depot.cpp)
+add_library(networks2019 src/vrp_instance.cpp src/preprocess_capacity.cpp src/preprocess_time_windows.cpp src/preprocess_service_waiting.cpp src/preprocess_travel_times.cpp src/label.cpp src/monodirectional_labeling.cpp src/lazy_label.cpp src/pwl_domination_function.cpp src/bidirectional_labeling.cpp src/preprocess_triangle_depot.cpp src/pricing_problem.cpp src/spf.cpp src/bcp.cpp)
 target_link_libraries(networks2019 goc)
 
 # Create binaries.

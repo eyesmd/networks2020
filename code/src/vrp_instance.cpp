@@ -59,18 +59,18 @@ TimeUnit VRPInstance::ReadyTime(const GraphPath& p, TimeUnit t0) const
 	return t;
 }
 
-TimeUnit VRPInstance::Duration(const GraphPath& p, TimeUnit* dep) const
+Route VRPInstance::BestDurationRoute(const GraphPath& p) const
 {
 	PWLFunction Delta = arr[p[0]][p[0]];
+	if (Delta.Empty()) return {{}, 0.0, INFTY};
 	for (int k = 0; k < (int)p.size()-1; ++k)
 	{
 		Vertex i = p[k], j = p[k+1];
 		Delta = arr[i][j].Compose(Delta);
-		if (Delta.Empty()) return INFTY;
+		if (Delta.Empty()) return {{}, 0.0, INFTY};
 	}
 	Delta = Delta - PWLFunction::IdentityFunction(dom(Delta));
-	*dep = Delta.PreValue(min(img(Delta)));
-	return min(img(Delta));
+	return Route(p, Delta.PreValue(min(img(Delta))), min(img(Delta)));
 }
 
 VertexSet VRPInstance::Unreachable(Vertex v, TimeUnit t0) const

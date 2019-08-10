@@ -15,24 +15,14 @@ using namespace goc;
 
 namespace networks2019
 {
-MonodirectionalLabeling::MonodirectionalLabeling()
+MonodirectionalLabeling::MonodirectionalLabeling(const VRPInstance& vrp) : vrp_(vrp)
 {
-	t_m = INFTY;
 	cross = true;
 	process_limit = INT_MAX;
 	time_limit = 2.0_hr;
 	partial = true;
 	processed_count = 0;
-}
-
-MonodirectionalLabeling::~MonodirectionalLabeling()
-{
-}
-
-void MonodirectionalLabeling::SetProblem(const VRPInstance& vrp, const vector<ProfitUnit>& profits)
-{
-	vrp_ = vrp;
-	profits_ = profits;
+	
 	t_m = vrp.T;
 	U = vector<DemandLevel>(vrp.D.VertexCount());
 	
@@ -44,6 +34,19 @@ void MonodirectionalLabeling::SetProblem(const VRPInstance& vrp, const vector<Pr
 	no_label.length = 0;
 	no_label.S = no_label.U = {};
 	no_label.v = vrp.o;
+}
+
+MonodirectionalLabeling::~MonodirectionalLabeling()
+{
+	Clean();
+}
+
+void MonodirectionalLabeling::SetProblem(const PricingProblem& pricing_problem)
+{
+	vrp_.D.AddArcs(pp_.A); // Add previously forbidden arcs.
+	pp_ = pricing_problem;
+	vrp_.D.RemoveArcs(pp_.A); // Remove pricing problem forbidden arcs.
+	Clean();
 }
 
 vector<Label*> MonodirectionalLabeling::Run(LBQueue* q, MLBExecutionLog* log)
@@ -71,7 +74,7 @@ vector<Label*> MonodirectionalLabeling::Run(LBQueue* q, MLBExecutionLog* log)
 		Label* l = ExtensionStep(ll);
 		*log->extension_time += rolex2.Pause();
 		if (!l) continue; // Label could not be extended.
-		(*log->extended_count)++;
+		log->extended_count++;
 		
 		// Check domination.
 		rolex2.Reset().Resume();
@@ -79,8 +82,13 @@ vector<Label*> MonodirectionalLabeling::Run(LBQueue* q, MLBExecutionLog* log)
 		*log->domination_time += rolex2.Pause();
 		if (is_dominated) *log->positive_domination_time += rolex2.Pause();
 		if (!is_dominated) *log->negative_domination_time += rolex2.Pause();
-		if (is_dominated) { (*log->dominated_count)++; delete l; continue; } // Label is dominated, ignore.
-
+		if (is_dominated)
+		{
+			log->dominated_count++;
+			delete l;
+			continue;
+		} // Label is dominated, ignore.
+		
 		// Correct existing labels.
 		rolex2.Reset().Resume();
 		*log->corrected_count += CorrectionStep(l);
@@ -98,7 +106,7 @@ vector<Label*> MonodirectionalLabeling::Run(LBQueue* q, MLBExecutionLog* log)
 		// Process label.
 		rolex2.Reset().Resume();
 		ProcessStep(l);
-		(*log->processed_count)++;
+		log->processed_count++;
 		*log->process_time += rolex2.Pause();
 		P.push_back(l);
 		processed_count++;
@@ -126,7 +134,7 @@ vector<Label*> MonodirectionalLabeling::Run(LBQueue* q, MLBExecutionLog* log)
 
 LazyLabel MonodirectionalLabeling::Init() const
 {
-	return {(Label*)&no_label, vrp_.o, vrp_.tw[vrp_.o].left};
+	return {(Label*) &no_label, vrp_.o, vrp_.tw[vrp_.o].left};
 }
 
 Label* MonodirectionalLabeling::ExtensionStep(const LazyLabel& ll) const
@@ -147,17 +155,14 @@ Label* MonodirectionalLabeling::ExtensionStep(const LazyLabel& ll) const
 	lv->parent = l;
 	lv->v = v;
 	lv->q = l->q + vrp_.q[v];
-	lv->p = l->p + profits_[v];
-	lv->length = l->length+1;
-	// If max(rw(l)) > min(img(dep_uv)) then no matter when we depart we reach v before its time window.
-	// We have to wait, therefore the duration function is a single point.
-	if (epsilon_smaller(max(l->rw), min(img(vrp_.dep[u][v]))))
-		lv->duration = PWLFunction::ConstantFunction(l->duration(max(l->rw))+min(vrp_.tw[v])-max(l->rw), {min(vrp_.tw[v]), min(vrp_.tw[v])});
-	// Otherwise, we do the classic extension D_lv(t) = D_l(\dep_uv(t)) + \tau_uv(\dep_uv(t)).
-	else
-		lv->duration = (l->duration + vrp_.tau[u][v]).Compose(vrp_.dep[u][v]);
-	
-	if (lv->duration.Empty()) { delete lv; return nullptr; } // If no duration pieces exist, then ignore.
+	lv->p = l->p + pp_.P[v];
+	lv->length = l->length + 1;
+	// If max(rw(l)) < min(img(dep_uv)) then no matter when we depart we reach v before its time window.
+	// Otherwise, we can do the classic extension D_lv(t) = D_l(\dep_uv(t)) + \tau_uv(\dep_uv(t)).
+	lv->duration = epsilon_smaller(max(l->rw), min(img(vrp_.dep[u][v])))
+		? PWLFunction::ConstantFunction(l->duration(max(l->rw)) + min(vrp_.tw[v]) - max(l->rw), {min(vrp_.tw[v]), min(vrp_.tw[v])})
+		: (l->duration + vrp_.tau[u][v]).Compose(vrp_.dep[u][v]);
+	if (lv->duration.Empty()) { delete lv; return nullptr; } // If no duration pieces exist, then the label is dominated.
 	lv->rw = dom(lv->duration);
 	lv->min_cost = min(img(lv->duration)) - lv->p;
 	lv->S = unite(l->S, {v});
@@ -172,7 +177,7 @@ bool MonodirectionalLabeling::DominationStep(Label* l) const
 	
 	// Create function Delta which will be dominated.
 	PWLDominationFunction Delta = l->duration;
-	double l_max_cost = max(img(l->duration))-l->p;
+	double l_max_cost = max(img(l->duration)) - l->p;
 	
 	for (auto& demand_entry : U[l->v])
 	{
@@ -187,7 +192,7 @@ bool MonodirectionalLabeling::DominationStep(Label* l) const
 			return true;
 		}
 	}
-	l->duration = (PWLFunction)Delta;
+	l->duration = (PWLFunction) Delta;
 	l->rw = l->duration.Domain();
 	l->min_cost = min(img(l->duration)) - l->p;
 	return false;
@@ -200,7 +205,7 @@ int MonodirectionalLabeling::CorrectionStep(Label* l) const
 
 void MonodirectionalLabeling::ProcessStep(Label* l)
 {
-	insert_sorted(U[l->v].Insert(floor(l->q), {}), l, [] (Label* l1, Label* l2) { return l1->min_cost < l2->min_cost; });
+	insert_sorted(U[l->v].Insert(floor(l->q), {}), l, [](Label* l1, Label* l2) { return l1->min_cost < l2->min_cost; });
 }
 
 vector<LazyLabel> MonodirectionalLabeling::EnumerationStep(Label* l) const
@@ -216,5 +221,15 @@ vector<LazyLabel> MonodirectionalLabeling::EnumerationStep(Label* l) const
 		E.push_back({l, v, cross ? min(l->rw) : makespan});
 	}
 	return E;
+}
+
+void MonodirectionalLabeling::Clean()
+{
+	processed_count = 0;
+	for (auto& entry: U)
+		for (auto& entry_2: entry)
+			for (Label* m: entry_2.second)
+				delete m;
+	U = vector<DemandLevel>(vrp_.D.VertexCount());
 }
 } // networks2019
