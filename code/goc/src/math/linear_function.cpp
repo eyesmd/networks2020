@@ -10,6 +10,7 @@
 
 #include "goc/exception/exception_utils.h"
 #include "goc/math/number_utils.h"
+#include "goc/string/string_utils.h"
 
 using namespace std;
 using namespace nlohmann;
@@ -36,14 +37,8 @@ double LinearFunction::operator()(double x) const
 
 double LinearFunction::PreValue(double y) const
 {
-	if (epsilon_equal(slope, 0.0))
-	{
-		if (epsilon_equal(y, intercept))
-		{
-			return domain.right;
-		}
-		fail("Function is not inversible.");
-	}
+	if (!image.Includes(y)) fail(STR(y) + " is not in the image " + STR(image));
+	if (epsilon_equal(slope, 0.0)) return domain.right;
 	return (y - intercept) / slope;
 }
 
