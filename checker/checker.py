@@ -100,9 +100,10 @@ def ready_time(instance, path, t0):
 		i = path[k] 
 		j = path[k+1]
 		q += d[j]
-		t = max(t+travel_time(instance, i, j, t), a[j]) + s[j]
+		t = max(t+travel_time(instance, i, j, t), a[j])
 		if epsilon_bigger(q, Q): return INFTY
 		if epsilon_bigger(t, b[j]): return INFTY
+		t += s[j]
 	return t
 
 # Returns: true if the routes are valid.
@@ -129,6 +130,7 @@ def main():
 		print(F"Checking {output_file.name}")
 
 		for output in output_file_json["outputs"]:
+			if not "Exact" in output["stdout"]: continue
 			dataset_name = output["dataset_name"]
 			instance_name = output["instance_name"]
 			experiment_name = output["experiment_name"]
