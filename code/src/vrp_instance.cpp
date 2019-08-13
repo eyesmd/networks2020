@@ -80,6 +80,15 @@ VertexSet VRPInstance::Unreachable(Vertex v, TimeUnit t0) const
 	return U;
 }
 
+VertexSet VRPInstance::WeakUnreachable(goc::Vertex v, TimeUnit t0) const
+{
+	VertexSet U;
+	double min_tt = INFTY;
+	for (Vertex w: D.Successors(v)) min_tt = min(min_tt, TravelTime({v,w}, t0));
+	for (Vertex w: D.Vertices()) if (epsilon_bigger(t0+min_tt, tw[w].right)) U.set(w);
+	return U;
+}
+
 void VRPInstance::Print(ostream& os) const
 {
 	os << json(*this);

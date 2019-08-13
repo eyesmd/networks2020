@@ -1,0 +1,17 @@
+{
+  "datasets": [{"name": "dabia_et_al_2013", "select":  "!HARD"}],
+  "experiments": [
+    {
+      "name": "BP-PART",
+      "executable": "bp",
+      "time_limit": 7200,
+      "cut_limit": 0
+    },
+    {
+      "name": "BP-CUTS",
+      "executable": "bp",
+      "time_limit": 7200,
+      "cut_limit": 500
+    }
+  ]
+}

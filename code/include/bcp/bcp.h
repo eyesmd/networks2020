@@ -59,6 +59,10 @@ private:
 	// The best solution there is an UB to the problem.
 	void FreezeHeuristic();
 	
+	// Separates subset row cuts with n = 3, k = 2.
+	// Returns: if any cut was added.
+	bool SeparateCuts(const goc::Valuation& z);
+	
 	std::priority_queue<Node*, std::vector<Node*>, Node::Comparator> q; // queue of nodes in the BB tree.
 	double z_ub, z_lb; // z_ub = value of the best int solution, z_lb = value of the worst open node.
 	goc::Valuation ub; // Best int solution found so far.

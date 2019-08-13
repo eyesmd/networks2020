@@ -4,7 +4,9 @@
 // Departamento de Computacion - Universidad de Buenos Aires.
 //
 
-#include "spf.h"
+#include "bcp/spf.h"
+
+#include "bcp/pricing_problem.h"
 
 using namespace std;
 using namespace goc;
@@ -47,6 +49,23 @@ void SPF::AddRoute(const Route& r)
 	
 	// Add the route to the structure indexed by arcs.
 	for (int k = 0; k < (int)r.path.size()-1; ++k) omega_by_arc[r.path[k]][r.path[k+1]].push_back(j);
+	
+	// Update cuts coefficients.
+	for (int i = 0; i < cuts.size(); ++i)
+		if (sum<Vertex>(r.path, [&] (Vertex v) { return cuts[i].test(v) ? 1 : 0; }) >= 2)
+			formulation->SetConstraintCoefficient(n+i, y[j], 1.0);
+}
+
+void SPF::AddCut(const SubsetRowCut& cut)
+{
+	int i = cuts.size(); // index of this new cut.
+	cuts.push_back(cut);
+	formulation->AddConstraint(Expression().LEQ(1.0)); // Add row for cut. floor(n/k) = floor(3/2) = 1.
+	
+	// Update routes' coefficient that visit at least 2 customers in the cut.
+ 	for (int j = 0; j < omega.size(); ++j)
+		if (sum<Vertex>(omega[j].path, [&] (Vertex v) { return cut.test(v) ? 1 : 0; }) >= 2)
+			formulation->SetConstraintCoefficient(n+i, y[j], 1.0);
 }
 
 void SPF::SetForbiddenArcs(const vector<Arc>& A)
@@ -72,8 +91,10 @@ const Route& SPF::RouteOf(const Variable& variable) const
 PricingProblem SPF::InterpretDuals(const vector<double>& duals) const
 {
 	PricingProblem pp;
-	pp.P = duals;
+	pp.P = vector<double>(duals.begin(), duals.begin()+n);
 	pp.A = forbidden_arcs;
+	pp.S = cuts;
+	pp.sigma = vector<double>(duals.begin()+n, duals.begin()+n+cuts.size());
 	return pp;
 }
 

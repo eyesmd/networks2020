@@ -549,7 +549,7 @@
 }, {
 	"file_name": "RC105_100.json",
 	"instance_name": "RC105_100",
-	"tags": ["RC105_100", "N100", "TRC1", "C05"]
+	"tags": ["RC105_100", "N100", "TRC1", "C05", "HARD"]
 }, {
 	"file_name": "RC106_100.json",
 	"instance_name": "RC106_100",

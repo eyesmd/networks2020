@@ -4,23 +4,41 @@
 // Departamento de Computacion - Universidad de Buenos Aires.
 //
 
-#include "monodirectional_labeling.h"
+#include "labeling/monodirectional_labeling.h"
 
 #include <climits>
 
-#include "pwl_domination_function.h"
+#include "labeling/pwl_domination_function.h"
 
 using namespace std;
 using namespace goc;
 
 namespace networks2019
 {
+namespace
+{
+// Definition of Alpha from Section 5.2.
+double alpha(Label* l, bool partial)
+{
+	if (partial) return l->min_cost;
+	else return -(l->rw.right-l->duration(l->rw.right))-l->p-l->cut_cost;
+}
+
+// Definition of Beta from Section 5.2.
+double beta(Label* l, bool partial)
+{
+	if (partial) return max(img(l->duration))-l->p-l->cut_cost;
+	else return -(l->rw.right-l->duration(l->rw.right))-l->p-l->cut_cost;
+}
+}
+
 MonodirectionalLabeling::MonodirectionalLabeling(const VRPInstance& vrp) : vrp_(vrp)
 {
 	cross = true;
 	process_limit = INT_MAX;
 	time_limit = 2.0_hr;
-	partial = true;
+	partial = limited_extension = lazy_extension = unreachable_strengthened = sort_by_cost = true;
+	relax_elementary_check = relax_cost_check = correcting = false;
 	processed_count = 0;
 	
 	t_m = vrp.T;
@@ -43,6 +61,11 @@ MonodirectionalLabeling::~MonodirectionalLabeling()
 
 void MonodirectionalLabeling::SetProblem(const PricingProblem& pricing_problem)
 {
+	// Set cut resources in null label.
+	no_label.cut_cost = 0.0;
+	no_label.cut_nz = {};
+	no_label.cut_visited = vector<int>(pricing_problem.S.size(), 0);
+	
 	vrp_.D.AddArcs(pp_.A); // Add previously forbidden arcs.
 	pp_ = pricing_problem;
 	vrp_.D.RemoveArcs(pp_.A); // Remove pricing problem forbidden arcs.
@@ -70,9 +93,13 @@ vector<Label*> MonodirectionalLabeling::Run(LBQueue* q, MLBExecutionLog* log)
 		*log->queuing_time += rolex2.Pause();
 		
 		// Turn lazy label into complete label.
-		rolex2.Reset().Resume();
-		Label* l = ExtensionStep(ll);
-		*log->extension_time += rolex2.Pause();
+		Label* l = ll.extension;
+		if (lazy_extension)
+		{
+			rolex2.Reset().Resume();
+			l = ExtensionStep(ll);
+			*log->extension_time += rolex2.Pause();
+		}
 		if (!l) continue; // Label could not be extended.
 		log->extended_count++;
 		
@@ -90,15 +117,19 @@ vector<Label*> MonodirectionalLabeling::Run(LBQueue* q, MLBExecutionLog* log)
 		} // Label is dominated, ignore.
 		
 		// Correct existing labels.
-		rolex2.Reset().Resume();
-		*log->corrected_count += CorrectionStep(l);
-		(*log->correction_time) += rolex2.Pause();
+		if (correcting)
+		{
+			rolex2.Reset().Resume();
+			*log->corrected_count += CorrectionStep(l);
+			*log->correction_time += rolex2.Pause();
+		}
 		
 		// If min(rw(l)) > t_m, then l should not be extended and ll should have been preserved in the queue with the
 		// new makespan.
 		if (!cross && epsilon_bigger(min(l->rw), t_m))
 		{
 			q->push(LazyLabel(l->parent, l->v, min(l->rw)));
+			delete l;
 			continue;
 		}
 		
@@ -106,9 +137,12 @@ vector<Label*> MonodirectionalLabeling::Run(LBQueue* q, MLBExecutionLog* log)
 		// Process label.
 		rolex2.Reset().Resume();
 		ProcessStep(l);
+		
 		log->processed_count++;
 		*log->process_time += rolex2.Pause();
 		P.push_back(l);
+		stretch_to_size(*log->count_by_length, l->length+1, 0);
+		log->count_by_length->at(l->length)++;
 		processed_count++;
 		
 		// Get feasible extensions.
@@ -134,11 +168,14 @@ vector<Label*> MonodirectionalLabeling::Run(LBQueue* q, MLBExecutionLog* log)
 
 LazyLabel MonodirectionalLabeling::Init() const
 {
-	return {(Label*) &no_label, vrp_.o, vrp_.tw[vrp_.o].left};
+	LazyLabel ll = {(Label*) &no_label, vrp_.o, vrp_.tw[vrp_.o].left};
+	if (!lazy_extension) ll.extension = ExtensionStep(ll);
+	return ll;
 }
 
 Label* MonodirectionalLabeling::ExtensionStep(const LazyLabel& ll) const
 {
+	if (correcting && ll.parent->duration.Empty()) return nullptr;
 	auto& l = ll.parent;
 	Vertex v = ll.v;
 	Vertex u = l->v;
@@ -162,11 +199,27 @@ Label* MonodirectionalLabeling::ExtensionStep(const LazyLabel& ll) const
 	lv->duration = epsilon_smaller(max(l->rw), min(img(vrp_.dep[u][v])))
 		? PWLFunction::ConstantFunction(l->duration(max(l->rw)) + min(vrp_.tw[v]) - max(l->rw), {min(vrp_.tw[v]), min(vrp_.tw[v])})
 		: (l->duration + vrp_.tau[u][v]).Compose(vrp_.dep[u][v]);
+	if (limited_extension && !cross) lv->duration.RestrictDomain({0.0, t_m});
 	if (lv->duration.Empty()) { delete lv; return nullptr; } // If no duration pieces exist, then the label is dominated.
 	lv->rw = dom(lv->duration);
-	lv->min_cost = min(img(lv->duration)) - lv->p;
 	lv->S = unite(l->S, {v});
-	lv->U = unite(lv->S, vrp_.Unreachable(v, lv->rw.left));
+	lv->U = unite(lv->S, unreachable_strengthened ? vrp_.Unreachable(v, lv->rw.left) : vrp_.WeakUnreachable(v, lv->rw.left));
+	// Extend cut resources.
+	lv->cut_cost = l->cut_cost;
+	lv->cut_visited = l->cut_visited;
+	for (int i = 0; i < pp_.S.size(); ++i)
+	{
+		if (pp_.S[i].test(lv->v))
+		{
+			lv->cut_visited[i]++;
+			if (lv->cut_visited[i] == 2) lv->cut_cost += pp_.sigma[i]; // Visited 2 vertices of the cut.
+		}
+		if (lv->cut_visited[i] == 1)
+		{
+			lv->cut_nz.push_back(i); // Add to cut_nz cuts with exactly 1 visited vertex of the cut.
+		}
+	}
+	lv->min_cost = min(img(lv->duration)) - lv->p - lv->cut_cost;
 	return lv;
 }
 
@@ -177,7 +230,7 @@ bool MonodirectionalLabeling::DominationStep(Label* l) const
 	
 	// Create function Delta which will be dominated.
 	PWLDominationFunction Delta = l->duration;
-	double l_max_cost = max(img(l->duration)) - l->p;
+	double l_beta = beta(l, partial);
 	
 	for (auto& demand_entry : U[l->v])
 	{
@@ -185,27 +238,68 @@ bool MonodirectionalLabeling::DominationStep(Label* l) const
 		for (auto& m: demand_entry.second)
 		{
 			// We know that q(m) <= q(l), v(m) = v(l).
-			if (epsilon_bigger(m->min_cost, l_max_cost)) break;
-			if (!is_subset(m->U, l->U)) continue;
-			if (!partial && !Delta.IsAlwaysDominated(m->duration, l->p - m->p)) continue;
-			else if (partial && !Delta.DominatePieces(m->duration, l->p - m->p)) continue;
+			if (sort_by_cost && epsilon_bigger(alpha(m, partial), l_beta)) break;
+			if (!relax_elementary_check && !is_subset(m->U, l->U)) continue;
+			
+			if (!relax_cost_check)
+			{
+				// theta = p(l) + cut_cost(l) - p(m) - cut_cost(m) - \sum {sigma(i) : cut_visited[i](m) == 1 && cut_visited[i](l) != 1 }.
+				double theta = l->p + l->cut_cost - m->p - m->cut_cost;
+				for (int i: m->cut_nz) if (l->cut_visited[i] != 1) theta -= pp_.sigma[i];
+				if (!partial && !Delta.IsAlwaysDominated(m->duration, theta)) continue;
+				else if (partial && !Delta.DominatePieces(m->duration, theta)) continue;
+			}
+			
 			return true;
 		}
 	}
 	l->duration = (PWLFunction) Delta;
 	l->rw = l->duration.Domain();
-	l->min_cost = min(img(l->duration)) - l->p;
+	l->min_cost = min(img(l->duration)) - l->p - l->cut_cost;
 	return false;
 }
 
-int MonodirectionalLabeling::CorrectionStep(Label* l) const
+int MonodirectionalLabeling::CorrectionStep(Label* m)
 {
-	return 0;
+	int removed = 0;
+	for (auto it_d = U[m->v].rbegin(); it_d != U[m->v].rend(); ++it_d)
+	{
+		auto& demand_entry = *it_d;
+		if (epsilon_smaller(demand_entry.first, m->q)) break;
+		for (int j = 0; j < demand_entry.second.size(); ++j)
+		{
+			Label* l = demand_entry.second[j];
+			if (!relax_elementary_check && !is_subset(m->U, l->U)) continue;
+			if (!relax_cost_check)
+			{
+				// theta = p(l) + cut_cost(l) - p(m) - cut_cost(m) - \sum {sigma(i) : cut_visited[i](m) == 1 && cut_visited[i](l) != 1 }.
+				double theta = l->p + l->cut_cost - m->p - m->cut_cost;
+				for (int i: m->cut_nz) if (l->cut_visited[i] != 1) theta -= pp_.sigma[i];
+				PWLDominationFunction Delta(l->duration);
+				if (partial)
+				{
+					Delta.DominatePieces(m->duration, theta);
+					l->duration = (PWLFunction) Delta;
+					l->rw = l->duration.Domain();
+					l->min_cost = min(img(l->duration)) - l->p - l->cut_cost;
+				}
+				if ((!partial && Delta.IsAlwaysDominated(m->duration, theta)) || (partial && l->duration.Empty()))
+				{
+					// If l is fully dominated, remove.
+					demand_entry.second.erase(demand_entry.second.begin()+j);
+					--j;
+					++removed;
+				}
+			}
+		}
+	}
+	return removed;
 }
 
 void MonodirectionalLabeling::ProcessStep(Label* l)
 {
-	insert_sorted(U[l->v].Insert(floor(l->q), {}), l, [](Label* l1, Label* l2) { return l1->min_cost < l2->min_cost; });
+	if (sort_by_cost) insert_sorted(U[l->v].Insert(floor(l->q), {}), l, [&](Label* l1, Label* l2) { return alpha(l1, partial) < alpha(l2, partial); });
+	else U[l->v].Insert(floor(l->q), {}).push_back(l);
 }
 
 vector<LazyLabel> MonodirectionalLabeling::EnumerationStep(Label* l) const
@@ -218,7 +312,9 @@ vector<LazyLabel> MonodirectionalLabeling::EnumerationStep(Label* l) const
 		if (epsilon_bigger(l->q + vrp_.q[v], vrp_.Q)) continue;
 		if (epsilon_bigger(min(l->rw), max(dom(vrp_.arr[l->v][v])))) continue;
 		double makespan = vrp_.arr[l->v][v](max(min(l->rw), min(dom(vrp_.arr[l->v][v]))));
-		E.push_back({l, v, cross ? min(l->rw) : makespan});
+		LazyLabel ll{l, v, makespan};
+		if (!lazy_extension) ll.extension = ExtensionStep(ll);
+		E.push_back(ll);
 	}
 	return E;
 }

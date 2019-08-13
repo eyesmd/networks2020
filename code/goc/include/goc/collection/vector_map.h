@@ -74,6 +74,26 @@ public:
 		return S.end();
 	}
 	
+	typename std::vector<std::pair<K, V>>::reverse_iterator rbegin()
+	{
+		return S.rbegin();
+	}
+	
+	typename std::vector<std::pair<K, V>>::const_reverse_iterator rbegin() const
+	{
+		return S.rbegin();
+	}
+	
+	typename std::vector<std::pair<K, V>>::reverse_iterator rend()
+	{
+		return S.rend();
+	}
+	
+	typename std::vector<std::pair<K, V>>::const_reverse_iterator rend() const
+	{
+		return S.rend();
+	}
+	
 	virtual void Print(std::ostream& os) const
 	{
 		os << S;

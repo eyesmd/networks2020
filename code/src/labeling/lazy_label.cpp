@@ -4,7 +4,7 @@
 // Departamento de Computacion - Universidad de Buenos Aires.
 //
 
-#include "lazy_label.h"
+#include "labeling/lazy_label.h"
 
 namespace networks2019
 {

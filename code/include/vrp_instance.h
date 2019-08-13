@@ -67,6 +67,9 @@ public:
 	// Returns: a set of all vertices which are unreachable if departing from v at t0.
 	VertexSet Unreachable(goc::Vertex v, TimeUnit t0) const;
 	
+	// Returns: a set of some vertices which are unreachable if departing from v at t0.
+	VertexSet WeakUnreachable(goc::Vertex v, TimeUnit t0) const;
+	
 	// Prints the JSON representation of the instance.
 	virtual void Print(std::ostream& os) const;
 };

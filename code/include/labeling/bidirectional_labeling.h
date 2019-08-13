@@ -13,7 +13,7 @@
 #include "goc/goc.h"
 
 #include "vrp_instance.h"
-#include "pricing_problem.h"
+#include "bcp/pricing_problem.h"
 #include "label.h"
 #include "lazy_label.h"
 #include "monodirectional_labeling.h"
@@ -28,6 +28,15 @@ public:
 	std::ostream* screen_output; // Output log to this stream (if nullptr, then no output is available).
 	bool closing_state; // true if Closing state (last-edge merge), false if Opening state (iterative merge).
 	int merge_start; // after <merge_start> forward labels have been processed, start iterative-merge.
+	bool partial; // Indicates if partial domination should be used.
+	bool relax_elementary_check; // Indicates if dominance S(M) \subseteq S(L) should be ignored (heuristically).
+	bool relax_cost_check; // Indicates if dominance c_M(t) <= c_L(t) should be ignored (heuristically).
+	bool limited_extension; // Indicates if limited extension should be applied.
+	bool lazy_extension; // Indicates if lazy extension is used.
+	bool unreachable_strengthened; // Indicates if the strengthened version of unreachable vertices is used.
+	bool sort_by_cost; // Indicate if the last level sorting by cost strategy is used.
+	bool correcting; // Indicates if the correcting step is executed.
+	bool symmetric; // Indicates if symmetric bidirectional labeling should be applied (or asymmetric if false).
 	
 	BidirectionalLabeling(const VRPInstance& vrp);
 	
@@ -51,6 +60,7 @@ private:
 	VRPInstance vrp_;
 	PricingProblem pp_;
 	MonodirectionalLabeling lbl_[2]; // lbl_[0] = forward, lbl_[1] = backward.
+	MonodirectionalLabeling::DominanceStructure M[2]; // Processed labels are stored in M[v][q] sorted by min_cost(l).
 	
 	// Pool of negative reduced cost solutions found (indexed by their visited vertices).
 	// We only keep the best solution for each set of visited vertices.

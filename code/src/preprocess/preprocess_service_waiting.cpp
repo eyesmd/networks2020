@@ -4,7 +4,7 @@
 // Departamento de Computacion - Universidad de Buenos Aires.
 //
 
-#include "preprocess_service_waiting.h"
+#include "preprocess/preprocess_service_waiting.h"
 
 using namespace std;
 using namespace goc;

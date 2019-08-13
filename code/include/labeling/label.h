@@ -27,7 +27,10 @@ public:
 	VertexSet U; // S \cup "unreachables".
 	goc::PWLFunction duration; // duration(t) = "minimum duration for reaching v at time t".
 	goc::Interval rw; // rw = dom(duration).
-	double min_cost; // Label minimum cost (min{duration(t)-p : t \in dom(duration)}).
+	double min_cost; // Label minimum cost (min{duration(t)-p-cut_cost : t \in dom(duration)}).
+	std::vector<int> cut_visited; // visited vertices of the cut.
+	std::vector<int> cut_nz; // cut indices that have cut_visited[i] % 2 > 0.
+	double cut_cost; // total cost inflicted by the cuts duals.
 	
 	goc::GraphPath Path() const;
 	

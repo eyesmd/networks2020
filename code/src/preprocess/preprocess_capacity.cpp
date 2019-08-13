@@ -4,9 +4,7 @@
 // Departamento de Computacion - Universidad de Buenos Aires.
 //
 
-#include "preprocess_triangle_depot.h"
-
-#include "vrp_instance.h"
+#include "preprocess/preprocess_capacity.h"
 
 using namespace std;
 using namespace goc;
@@ -27,20 +25,14 @@ void remove_arc(Vertex i, Vertex j, json& instance)
 }
 }
 
-void preprocess_triangle_depot(json& instance)
+void preprocess_capacity(json& instance)
 {
-	VRPInstance vrp = instance;
-	Vertex o = vrp.o, d = vrp.d;
-	for (Vertex i: vrp.D.Vertices())
-	{
-		for (Vertex j: vrp.D.Successors(i))
-		{
-			if (i == o || j == d) continue;
-			TimeUnit b_i = max(vrp.tw[i]), a_j = min(vrp.tw[j]);
-			double t0_ij = vrp.TravelTime({i, d}, b_i) + vrp.TravelTime({o, j}, vrp.ArrivalTime({i, d}, b_i));
-			if (epsilon_smaller_equal(t0_ij, a_j - b_i))
+	double Q = instance["capacity"];
+	vector<double> q = instance["demands"];
+	Digraph D = instance["digraph"];
+	for (Vertex i: D.Vertices())
+		for (Vertex j: D.Successors(i))
+			if (epsilon_bigger(q[i]+q[j], Q))
 				remove_arc(i, j, instance);
-		}
-	}
 }
 } // namespace networks2019

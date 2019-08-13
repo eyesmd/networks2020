@@ -18,6 +18,7 @@ public:
 	Label* parent; // label to extend.
 	goc::Vertex v; // extending to vertex v.
 	TimeUnit makespan; // earliest arrival time to v, for queuing purposes.
+	Label* extension; // if lazyness is not used, the extension is stored here.
 	
 	LazyLabel();
 	

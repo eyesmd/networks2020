@@ -4,9 +4,9 @@
 // Departamento de Computacion - Universidad de Buenos Aires.
 //
 
-#include "bidirectional_labeling.h"
+#include "labeling/bidirectional_labeling.h"
 
-#include "pricing_problem.h"
+#include "bcp/pricing_problem.h"
 
 #include <climits>
 
@@ -75,12 +75,15 @@ BidirectionalLabeling::BidirectionalLabeling(const VRPInstance& vrp)
 	merge_start = 0;
 	lbl_[0].process_limit = lbl_[1].process_limit = 10;
 	lbl_[0].cross = false, lbl_[1].cross = true;
+	partial = limited_extension = lazy_extension = unreachable_strengthened = sort_by_cost = true;
+	relax_elementary_check = relax_cost_check = false;
 }
 
 BLBExecutionLog BidirectionalLabeling::Run(const PricingProblem& pricing_problem, vector<Route>* R)
 {
 	// Clean solution pool.
 	S.clear();
+	M[0] = M[1] = vector<MonodirectionalLabeling::DemandLevel>(vrp_.D.VertexCount());
 	
 	// Set pricing problem.
 	vrp_.D.AddArcs(pp_.A); // Add previously forbidden arcs.
@@ -90,7 +93,16 @@ BLBExecutionLog BidirectionalLabeling::Run(const PricingProblem& pricing_problem
 	// Init forward and backward labeling.
 	lbl_[0].SetProblem(pp_);
 	lbl_[1].SetProblem(reverse_pricing_problem(pp_));
-	lbl_[0].t_m = lbl_[1].t_m = vrp_.T;
+	lbl_[0].t_m = lbl_[1].t_m = symmetric ? vrp_.T / 2 : vrp_.T;
+	
+	lbl_[0].partial = lbl_[1].partial = partial;
+	lbl_[0].relax_elementary_check = lbl_[1].relax_elementary_check = relax_elementary_check;
+	lbl_[0].relax_cost_check = lbl_[1].relax_cost_check = relax_cost_check;
+	lbl_[0].limited_extension = lbl_[1].limited_extension = limited_extension;
+	lbl_[0].lazy_extension = lbl_[1].lazy_extension = lazy_extension;
+	lbl_[0].sort_by_cost = lbl_[1].sort_by_cost = sort_by_cost;
+	lbl_[0].unreachable_strengthened = lbl_[1].unreachable_strengthened = unreachable_strengthened;
+	lbl_[0].correcting = lbl_[1].correcting = correcting;
 	
 	BLBExecutionLog log(true);
 	Stopwatch rolex(false), merge_rolex(false);
@@ -128,11 +140,16 @@ BLBExecutionLog BidirectionalLabeling::Run(const PricingProblem& pricing_problem
 			lbl_[d].time_limit = time_limit - rolex.Peek(); // Set time limit.
 			auto P = lbl_[d].Run(&q[d], mlb_log[d]);
 			
+			// If iterative-merge is enabled, then add the labels to the structure.
+			if (!closing_state)
+				for (Label* l: P)
+					insert_sorted(M[d][l->v].Insert(floor(l->q), {}), l, [] (Label* l, Label* m) { return l->min_cost < m->min_cost; });
+			
 			// If iterative-merge is enabled, then try to merge.
 			if (!closing_state && log.forward_log->processed_count >= merge_start)
 			{
 				merge_rolex.Reset().Resume();
-				for (Label* l: P) IterativeMerge(l, lbl_[od].U);
+				for (Label* l: P) IterativeMerge(l, M[od]);
 				*log.merge_time += merge_rolex.Pause();
 			}
 			
@@ -166,7 +183,8 @@ BLBExecutionLog BidirectionalLabeling::Run(const PricingProblem& pricing_problem
 		*log.merge_time += merge_rolex.Pause();
 	}
 	
-	if (q[0].empty() && q[1].empty()) log.status = BLBStatus::Finished;
+	if (S.size() >= solution_limit) log.status = BLBStatus::SolutionLimitReached;
+	else log.status = BLBStatus::Finished;
 	*log.time += rolex.Pause();
 	
 	// Add solutions from the pool to the return vector R.
@@ -190,7 +208,7 @@ void BidirectionalLabeling::IterativeMerge(Label* l, const MonodirectionalLabeli
 		for (auto& m: demand_entry.second)
 		{
 			if (S.size() >= solution_limit) break; // Do not exceed solution limit.
-			if (epsilon_bigger_equal(m->min_cost+l->min_cost+pp_.P[l->v], 0.0)) break;
+			if (epsilon_bigger_equal(m->min_cost+l->min_cost+pp_.P[l->v] + l->cut_cost - l->parent->cut_cost, 0.0)) break;
 			Merge(l, m);
 		}
 	}
@@ -207,11 +225,12 @@ void BidirectionalLabeling::LastEdgeMerge(LBQueue& qf, const MonodirectionalLabe
 			for (auto& m: entry.second)
 				insert_sorted(M[m->v][m->parent->v].Insert(entry.first, {}), m, [] (Label* m1, Label* m2) { return m1->min_cost < m2->min_cost; });
 	
-	while (!qf.empty() && S.size() < solution_limit)
+	while (!qf.empty())
 	{
 		LazyLabel ll = qf.top();
 		qf.pop();
 		Label* l = ll.parent;
+		if (S.size() >= solution_limit) continue;
 		
 		for (auto& entry: M[ll.parent->v][ll.v])
 		{
@@ -220,7 +239,7 @@ void BidirectionalLabeling::LastEdgeMerge(LBQueue& qf, const MonodirectionalLabe
 			for (Label* m: entry.second)
 			{
 				if (S.size() >= solution_limit) break; // Do not exceed solution limit.
-				if (epsilon_bigger_equal(m->min_cost+l->min_cost+pp_.P[l->v], 0.0)) break;
+				if (epsilon_bigger_equal(m->min_cost+l->min_cost+pp_.P[l->v] + l->cut_cost - l->parent->cut_cost, 0.0)) break;
 				Merge(l, m);
 			}
 		}
@@ -247,7 +266,9 @@ void BidirectionalLabeling::Merge(Label* l, Label* m)
 		r.duration = min(img(lm_duration));
 	}
 	
-	double merge_cost = r.duration - l->p - m->p + pp_.P[l->v];
+	double merge_cut_cost = 0.0;
+	for (int i = 0; i < pp_.S.size(); ++i) if (l->parent->cut_visited[i]+m->cut_visited[i] >= 2) merge_cut_cost += pp_.sigma[i];
+	double merge_cost = r.duration - l->p - m->p + pp_.P[l->v] - merge_cut_cost;
 	if (epsilon_bigger_equal(merge_cost, 0.0)) return;
 	
 	// Merge l and m paths.

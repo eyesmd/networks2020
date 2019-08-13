@@ -4,7 +4,7 @@
 // Departamento de Computacion - Universidad de Buenos Aires.
 //
 
-#include "pricing_problem.h"
+#include "bcp/pricing_problem.h"
 
 using namespace std;
 using namespace goc;
@@ -21,5 +21,7 @@ void to_json(json& j, const PricingProblem& p)
 {
 	j["forbidden_arcs"] = p.A;
 	j["profits"] = p.P;
+	j["cuts"] = p.S;
+	j["cuts_duals"] = p.sigma;
 }
 } // namespace networks2019

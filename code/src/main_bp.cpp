@@ -11,16 +11,16 @@
 #include <goc/goc.h>
 
 #include "vrp_instance.h"
-#include "preprocess_travel_times.h"
-#include "preprocess_capacity.h"
-#include "preprocess_time_windows.h"
-#include "preprocess_service_waiting.h"
-#include "preprocess_triangle_depot.h"
+#include "preprocess/preprocess_travel_times.h"
+#include "preprocess/preprocess_capacity.h"
+#include "preprocess/preprocess_time_windows.h"
+#include "preprocess/preprocess_service_waiting.h"
+#include "preprocess/preprocess_triangle_depot.h"
 
-#include "bcp.h"
-#include "spf.h"
-#include "pricing_problem.h"
-#include "bidirectional_labeling.h"
+#include "bcp/bcp.h"
+#include "bcp/spf.h"
+#include "bcp/pricing_problem.h"
+#include "labeling/bidirectional_labeling.h"
 
 using namespace std;
 using namespace goc;
@@ -29,27 +29,45 @@ using namespace networks2019;
 
 double path_cost(const VRPInstance& vrp, PricingProblem pp, GraphPath p)
 {
-	return vrp.BestDurationRoute(p).duration - sum<Vertex>(p, [&] (Vertex v) { return pp.P[v]; });
+	VertexSet ppp;
+	for (Vertex i: p) ppp.set(i);
+	return vrp.BestDurationRoute(p).duration - sum<Vertex>(p, [&] (Vertex v) { return pp.P[v]; })
+	- sum<int>(range(0, pp.S.size()), [&] (int i) { return intersection(pp.S[i], ppp).count() >= 2 ? pp.sigma[i] : 0.0; });
 }
 
 int main()
 {
 	json output; // STDOUT output will go into this JSON.
 	
-	simulate_input_in_debug("instances/dabia_et_al_2013", "C104_25", "experiments/bp.json", "BP-PART");
+	simulate_input_in_debug("instances/dabia_et_al_2013", "R211_50", "experiments/bp.json", "BP-CUTS");
 	
 	json experiment, instance, solutions;
 	cin >> experiment >> instance >> solutions;
 	
 	// Parse experiment.
 	Duration time_limit = value_or_default(experiment, "time_limit", 2.0_hr);
-	int cut_limit = value_or_default(experiment, "cut_limit", 0);
+	int cut_limit = value_or_default(experiment, "cut_limit", 100);
 	int node_limit = value_or_default(experiment, "node_limit", INT_MAX);
+	bool partial = value_or_default(experiment, "partial", true);
+	bool limited_extension = value_or_default(experiment, "limited_extension", true);
+	bool lazy_extension = value_or_default(experiment, "lazy_extension", true);
+	bool unreachable_strengthened = value_or_default(experiment, "unreachable_strengthened", true);
+	bool sort_by_cost = value_or_default(experiment, "sort_by_cost", true);
+	bool symmetric = value_or_default(experiment, "symmetric", false);
+	bool iterative_merge = value_or_default(experiment, "iterative_merge", true);
+	
 	
 	// Show experiment details.
 	clog << "Time limit: " << time_limit << "s." << endl;
 	clog << "Cut limit: " << cut_limit << endl;
 	clog << "Node limit: " << node_limit << endl;
+	clog << "Partial: " << partial << endl;
+	clog << "Limited extension: " << limited_extension << endl;
+	clog << "Lazy extension: " << lazy_extension << endl;
+	clog << "Unreachable strengthened: " << unreachable_strengthened << endl;
+	clog << "Sort by cost: " << sort_by_cost << endl;
+	clog << "Symmetric: " << symmetric << endl;
+	clog << "Iterative merge: " << iterative_merge << endl;
 	
 	// Preprocess instance JSON.
 	clog << "Preprocessing..." << endl;
@@ -76,22 +94,47 @@ int main()
 	
 	BidirectionalLabeling lbl(vrp);
 	lbl.solution_limit = 3000;
-	lbl.closing_state = false;
+	lbl.closing_state = !iterative_merge;
+	lbl.partial = partial;
+	lbl.limited_extension = limited_extension;
+	lbl.lazy_extension = lazy_extension;
+	lbl.unreachable_strengthened = unreachable_strengthened;
+	lbl.sort_by_cost = sort_by_cost;
+	lbl.symmetric = symmetric;
+	
+	int heuristic_level = 0; // 0: relax cost, 1: relax elementarity, 2: exact
+	int max_level = 2; // exact
+	vector<string> level_name = { "Heuristic Cost", "Heuristic Elementarity", "Exact" };
 	bcp.pricing_solver = [&] (const PricingProblem& pricing_problem, int node_number, Duration tlimit, CGExecutionLog* cg_execution_log)
 	{
-		lbl.time_limit = tlimit;
+		Stopwatch iteration_rolex(true);
 		vector<Route> R;
-		auto lbl_log = lbl.Run(pricing_problem, &R);
-		
+		while (heuristic_level <= max_level)
+		{
+			lbl.time_limit = tlimit - iteration_rolex.Peek();
+			lbl.relax_cost_check = heuristic_level == 0;
+			lbl.relax_elementary_check = heuristic_level == 1;
+			auto lbl_log = lbl.Run(pricing_problem, &R);
+			
+			// Add iteration log.
+			cg_execution_log->iterations->push_back(lbl_log);
+			cg_execution_log->iterations->back()["iteration_name"] = level_name[heuristic_level];
+			
+			// Update merge_start and closing_state.
+			lbl.closing_state |= heuristic_level == 2 && lbl_log.status == BLBStatus::Finished;
+			lbl.merge_start = (lbl.merge_start + lbl_log.forward_log->processed_count) / 2;
+			
+			if (!R.empty()) break;
+			++heuristic_level;
+		}
 		// Add negative reduced cost routes.
 		for (auto& r: R) spf.AddRoute(r);
-		
-		// Add iteration log.
-		cg_execution_log->iterations->push_back(lbl_log);
-		
-		// Update merge_start and closing_state.
-		if (lbl_log.status == BLBStatus::Finished) lbl.closing_state = true;
-		lbl.merge_start = (lbl.merge_start + lbl_log.forward_log->processed_count) / 2;
+		if (heuristic_level > max_level)
+		{
+			heuristic_level = 0;
+			lbl.closing_state = false;
+			lbl.merge_start = 0;
+		}
 	};
 	VRPSolution solution(INFTY, {});
 	auto log = bcp.Run(&solution);

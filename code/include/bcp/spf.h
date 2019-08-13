@@ -11,10 +11,13 @@
 
 #include "goc/goc.h"
 
-#include "pricing_problem.h"
+#include "vrp_instance.h"
 
 namespace networks2019
 {
+typedef VertexSet SubsetRowCut; // We only consider cuts with n = 3, k = 2. So the set of vertices define the cut.
+class PricingProblem;
+
 // Represents a set-partitioning formulation for the VRP.
 // min c_j y_j															(0)
 // s.t.
@@ -24,7 +27,7 @@ class SPF
 {
 public:
 	goc::Formulation* formulation; // formulation for the restricted master problem
-	
+	std::vector<SubsetRowCut> cuts; // cuts added to the formulation.
 	
 	// Creates a Set-Partitioning formulation for VRP with n vertices.
 	// Assumes start-depot is 0 and end depot is n-1.
@@ -35,6 +38,10 @@ public:
 	
 	// Adds the specified route to the formulation (using the duration as its cost).
 	void AddRoute(const goc::Route& r);
+	
+	// Adds a subset row cut with n = 3, k = 2.
+	// \sum_{j \in Omega and #(r_j \cap cut) >= 2} y_j <= 1.0.
+	void AddCut(const SubsetRowCut& cut);
 	
 	//	- Sets y_j = 0 for all j that contains any arc in A.
 	void SetForbiddenArcs(const std::vector<goc::Arc>& A);

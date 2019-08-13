@@ -15,7 +15,7 @@
 #include "vrp_instance.h"
 #include "label.h"
 #include "lazy_label.h"
-#include "pricing_problem.h"
+#include "bcp/pricing_problem.h"
 
 namespace networks2019
 {
@@ -35,6 +35,13 @@ public:
 	TimeUnit t_m; // Only extend labels that have min(rw(.)) <= t_m.
 	bool cross; // Indicates if labels are allowed to cross t_m only one step.
 	bool partial; // Indicates if partial domination should be used.
+	bool relax_elementary_check; // Indicates if dominance S(M) \subseteq S(L) should be ignored (heuristically).
+	bool relax_cost_check; // Indicates if dominance c_M(t) <= c_L(t) should be ignored (heuristically).
+	bool limited_extension; // Indicates if limited extension should be applied.
+	bool lazy_extension; // Indicates if lazy extension is used.
+	bool unreachable_strengthened; // Indicates if the strengthened version of unreachable vertices is used.
+	bool sort_by_cost; // Indicate if the last level sorting by cost strategy is used.
+	bool correcting; // Indicates if the correcting step is executed.
 	
 	// Dominance structure.
 	typedef std::vector<Label*> BoundLevel;
@@ -69,7 +76,7 @@ private:
 	
 	// The correction step consists in removing all dominated parts of labels m in U by label l.
 	// Returns: the number of labels that were fully dominated.
-	int CorrectionStep(Label* l) const;
+	int CorrectionStep(Label* l);
 	
 	// The process step is where label l gets added to the domination structure U.
 	void ProcessStep(Label* l);

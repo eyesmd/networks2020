@@ -2,7 +2,7 @@
 // Created by gleraromero on 27/06/19.
 //
 
-#include "pwl_domination_function.h"
+#include "labeling/pwl_domination_function.h"
 
 using namespace std;
 using namespace goc;

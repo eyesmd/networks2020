@@ -9,13 +9,13 @@
 #include <goc/goc.h>
 
 #include "vrp_instance.h"
-#include "preprocess_travel_times.h"
-#include "preprocess_capacity.h"
-#include "preprocess_time_windows.h"
-#include "preprocess_service_waiting.h"
-#include "preprocess_triangle_depot.h"
+#include "preprocess/preprocess_travel_times.h"
+#include "preprocess/preprocess_capacity.h"
+#include "preprocess/preprocess_time_windows.h"
+#include "preprocess/preprocess_service_waiting.h"
+#include "preprocess/preprocess_triangle_depot.h"
 
-#include "bidirectional_labeling.h"
+#include "labeling/bidirectional_labeling.h"
 
 using namespace std;
 using namespace goc;
@@ -35,16 +35,30 @@ int main()
 {
 	json output; // STDOUT output will go into this JSON.
 	
-	simulate_input_in_debug("instances/networks_2019b", "C203_25_a", "experiments/pricing.json", "PART");
+	simulate_input_in_debug("instances/cuts", "R211_50", "experiments/pricing_cuts.json", "Part");
 	
 	json experiment, instance, solutions;
 	cin >> experiment >> instance >> solutions;
 	
 	// Parse experiment.
 	Duration time_limit = value_or_default(experiment, "time_limit", 2.0_hr);
+	bool correcting = value_or_default(experiment, "correcting", false);
+	bool partial = value_or_default(experiment, "partial", true);
+	bool limited_extension = value_or_default(experiment, "limited_extension", true);
+	bool lazy_extension = value_or_default(experiment, "lazy_extension", true);
+	bool unreachable_strengthened = value_or_default(experiment, "unreachable_strengthened", true);
+	bool sort_by_cost = value_or_default(experiment, "sort_by_cost", true);
+	bool symmetric = value_or_default(experiment, "symmetric", false);
 	
 	// Show experiment details.
 	clog << "Time limit: " << time_limit << "s." << endl;
+	clog << "Correcting: " << correcting << endl;
+	clog << "Partial: " << partial << endl;
+	clog << "Limited extension: " << limited_extension << endl;
+	clog << "Lazy extension: " << lazy_extension << endl;
+	clog << "Unreachable strengthened: " << unreachable_strengthened << endl;
+	clog << "Sort by cost: " << sort_by_cost << endl;
+	clog << "Symmetric: " << symmetric << endl;
 	
 	// Preprocess instance JSON.
 	clog << "Preprocessing..." << endl;
@@ -60,10 +74,17 @@ int main()
 	// Read pricing problem.
 	PricingProblem pp;
 	pp.P = vector<ProfitUnit>(instance["profits"].begin(), instance["profits"].end());
-	
+
 	clog << "Running pricing algorithm..." << endl;
 	BidirectionalLabeling lbl(vrp);
 	lbl.screen_output = &clog;
+	lbl.correcting = correcting;
+	lbl.partial = partial;
+	lbl.limited_extension = limited_extension;
+	lbl.lazy_extension = lazy_extension;
+	lbl.unreachable_strengthened = unreachable_strengthened;
+	lbl.sort_by_cost = sort_by_cost;
+	lbl.symmetric = symmetric;
 	vector<Route> R;
 	BLBExecutionLog log = lbl.Run(pp, &R);
 	

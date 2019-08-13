@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <bitset>
+#include "goc/lib/json.hpp"
 
 namespace goc
 {
@@ -56,5 +57,21 @@ inline bool is_subset(const std::bitset<N>& b1, const std::bitset<N>& b2)
 	return (b1 & b2) == b1;
 }
 } // namespace goc
+
+namespace std
+{
+template<unsigned long N>
+void to_json(nlohmann::json& j, const std::bitset<N>& b)
+{
+	j = std::vector<int>();
+	for (int i = 0; i < b.size(); ++i) if (b.test(i)) j.push_back(i);
+}
+
+template<unsigned long N>
+void from_json(const nlohmann::json& j, std::bitset<N>& b)
+{
+	for (int i: j) b.set(i);
+}
+} // namespace std
 
 #endif //GOC_COLLECTION_BITSET_UTILS_H

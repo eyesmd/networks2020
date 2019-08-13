@@ -2,9 +2,64 @@
   "datasets": [{"name": "networks_2019b"}],
   "experiments": [
     {
-      "name": "PART",
+      "name": "Basic",
       "executable": "pricing",
-      "time_limit": 7200
+      "time_limit": 3600,
+      "correcting": false,
+      "partial": false,
+      "limited_extension": false,
+      "lazy_extension": false,
+      "unreachable_strengthened": false,
+      "sort_by_cost": false,
+      "symmetric": true
+    },
+    {
+      "name": "Impl",
+      "executable": "pricing",
+      "time_limit": 3600,
+      "correcting": false,
+      "partial": false,
+      "limited_extension": false,
+      "lazy_extension": false,
+      "unreachable_strengthened": false,
+      "sort_by_cost": true,
+      "symmetric": true
+    },
+    {
+      "name": "Asym",
+      "executable": "pricing",
+      "time_limit": 3600,
+      "correcting": false,
+      "partial": false,
+      "limited_extension": true,
+      "lazy_extension": true,
+      "unreachable_strengthened": true,
+      "sort_by_cost": true,
+      "symmetric": false
+    },
+    {
+      "name": "Part",
+      "executable": "pricing",
+      "time_limit": 3600,
+      "correcting": false,
+      "partial": true,
+      "limited_extension": true,
+      "lazy_extension": true,
+      "unreachable_strengthened": true,
+      "sort_by_cost": true,
+      "symmetric": false
+    },
+    {
+      "name": "Corr",
+      "executable": "pricing",
+      "time_limit": 3600,
+      "correcting": true,
+      "partial": true,
+      "limited_extension": true,
+      "lazy_extension": true,
+      "unreachable_strengthened": true,
+      "sort_by_cost": true,
+      "symmetric": false
     }
   ]
 }

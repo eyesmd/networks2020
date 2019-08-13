@@ -4,7 +4,7 @@
 // Departamento de Computacion - Universidad de Buenos Aires.
 //
 
-#include "label.h"
+#include "labeling/label.h"
 
 using namespace std;
 using namespace goc;

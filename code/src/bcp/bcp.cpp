@@ -4,7 +4,7 @@
 // Departamento de Computacion - Universidad de Buenos Aires.
 //
 
-#include "bcp.h"
+#include "bcp/bcp.h"
 
 #include <climits>
 
@@ -13,7 +13,7 @@ using namespace goc;
 
 namespace networks2019
 {
-BCP::BCP(const Digraph& D, SPF* spf) : D(D), spf(spf), z_lb(-INFTY), z_ub(INFTY)
+BCP::BCP(const Digraph& D, SPF* spf) : D(D), spf(spf), z_lb(-INFTY), z_ub(INFTY), node_seq(0)
 {
 	time_limit = Duration::Max();
 	node_limit = cut_limit = INT_MAX;
@@ -21,10 +21,33 @@ BCP::BCP(const Digraph& D, SPF* spf) : D(D), spf(spf), z_lb(-INFTY), z_ub(INFTY)
 	cg_solver.screen_output = &clog;
 	cg_solver.lp_solver = &lp_solver;
 	cg_solver.pricing_function = [&] (const vector<double>& duals, double incumbent_value, Duration time_limit, CGExecutionLog* cg_execution_log) {
+		int variable_count = this->spf->formulation->VariableCount();
 		Stopwatch iteration_rolex(true);
 		auto pp = this->spf->InterpretDuals(duals);
 		pricing_solver(pp, 0, time_limit, cg_execution_log);
-		*log.pricing_time += iteration_rolex.Pause();
+		*log.pricing_time += iteration_rolex.Peek();
+		
+		// If no variable were added and we are in root node, separate cuts.
+		if (node_seq == 1 && variable_count == this->spf->formulation->VariableCount())
+		{
+			int cuts_added = 0;
+			while (this->spf->cuts.size() < cut_limit)
+			{
+				Stopwatch cut_rolex(true);
+				lp_solver.time_limit = time_limit - iteration_rolex.Peek();
+				auto lp_log = lp_solver.Solve(this->spf->formulation, {LPOption::Incumbent});
+				if (lp_log.status != LPStatus::Optimum) break;
+				bool added_cuts = SeparateCuts(lp_log.incumbent);
+				log.cut_family_iteration_count->at("SR")++;
+				log.cut_family_cut_time->at("SR") += cut_rolex.Peek();
+				*log.cut_time += cut_rolex.Peek();
+				if (!added_cuts) break;
+				log.cut_family_cut_count->at("SR")++;
+				log.cut_count++;
+				cuts_added++;
+			}
+			if (cuts_added > 0) clog << "\tCuts: " << cuts_added << endl;
+		}
 	};
 }
 
@@ -36,6 +59,12 @@ BCPExecutionLog BCP::Run(VRPSolution* solution)
 	log.time = log.lp_time = log.branching_time = log.pricing_time = 0.0_sec;
 	log.status = BCStatus::DidNotStart;
 	log.nodes_open = log.nodes_closed = 0;
+	log.cut_count = 0;
+	log.cut_time = 0.0_sec;
+	log.cut_families = {"SR"};
+	log.cut_family_cut_count = {{"SR", 0}};
+	log.cut_family_cut_time = {{"SR", 0.0_sec}};
+	log.cut_family_iteration_count = {{"SR", 0}};
 	
 	// Start algorithm.
 	rolex.Resume();
@@ -254,5 +283,44 @@ void BCP::FreezeHeuristic()
 		z_ub = bc_log.best_int_value;
 		ub = *bc_log.best_int_solution;
 	}
+}
+
+bool BCP::	SeparateCuts(const Valuation& z)
+{
+	// Parse basis variables.
+	vector<VertexSet> z_visited; // z_visited[i] = vertices visited by basis variable i.
+	vector<double> z_values; // z_values[i] = value of basis variable i.
+	for (auto& y_val: z)
+	{
+		auto route = spf->RouteOf(y_val.first);
+		z_visited.push_back(create_bitset<MAX_N>(route.path));
+		z_values.push_back(y_val.second);
+	}
+	
+	// Brute force enumeration of all cuts, check the most violated.
+	double best_violation = 0.0;
+	SubsetRowCut best;
+	for (Vertex i = 1; i < D.VertexCount()-1; ++i)
+	{
+		for (Vertex j = i + 1; j < D.VertexCount() - 1; ++j)
+		{
+			for (Vertex k = j + 1; k < D.VertexCount() - 1; ++k)
+			{
+				double violation = -1.0;
+				for (int r = 0; r < z_visited.size(); ++r)
+					if ((int)z_visited[r].test(i) + (int)z_visited[r].test(j) + (int)z_visited[r].test(k) >= 2)
+						violation += z_values[r];
+				if (epsilon_bigger(violation, best_violation))
+				{
+					best_violation = violation;
+					best = create_bitset<MAX_N>({i,j,k});
+				}
+			}
+		}
+	}
+	
+	// Add cut if found.
+	if (epsilon_bigger(best_violation, 0.0)) spf->AddCut(best);
+	return epsilon_bigger(best_violation, 0.0);
 }
 } // namespace networks2019

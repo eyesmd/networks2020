@@ -12,6 +12,8 @@
 
 #include "goc/goc.h"
 
+#include "spf.h"
+
 namespace networks2019
 {
 class PricingProblem : public goc::Printable
@@ -19,6 +21,8 @@ class PricingProblem : public goc::Printable
 public:
 	std::vector<goc::Arc> A; // Forbidden arcs.
 	std::vector<double> P; // Profits of the vertices.
+	std::vector<SubsetRowCut> S; // Cuts in the formulation.
+	std::vector<double> sigma; // Duals associated with the cuts C.
 	
 	virtual void Print(std::ostream& os) const;
 };
