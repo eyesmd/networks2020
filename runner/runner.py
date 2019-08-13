@@ -143,14 +143,6 @@ def run_experiment(experiment, instance, solutions):
 	process.stdin.write(json.dumps(experiment)) # First input: the experiment.
 	process.stdin.write(json.dumps(instance))	# Second input: the instance.
 	process.stdin.write(json.dumps(solutions)) 	# Third input: the solutions.
-	# process.stdin.close()
-	# Print the STDERR to screen if silent option is disabled.
-	# stderr_string = ""
-	# while process.poll() is None:
-	# 	line = process.stderr.readline()
-	# 	if line != "":
-	# 		stderr_string += str(line)
-	# 		if not silent: print(line, end='')
 	(stdout_string, stderr_string) = process.communicate()
 	exit_code = process.wait()
 	process.stdout.close()

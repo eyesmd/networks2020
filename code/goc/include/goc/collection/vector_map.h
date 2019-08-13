@@ -14,10 +14,15 @@
 
 namespace goc
 {
+// This class implements a dictionary over a vector. It stores (key, value) pairs sorted by key.
+// Invariant: there is only one entry per key.
+// Invariant: the vector is sorted by K ascendingly.
 template<typename K, typename V>
 class VectorMap : public Printable
 {
 public:
+	// Sets the value to the key if the key is not present.
+	// Returns: a reference to the value associated to the key.
 	V& Insert(const K& key, const V& value)
 	{
 		// Try to see if the element already existed.
@@ -38,16 +43,20 @@ public:
 		return S[i].second;
 	}
 	
+	// Returns: the (key, value) pair indexed with the index when sorted.
 	std::pair<K,V>& operator[](int index)
 	{
 		return S[index];
 	}
 	
+	// Returns: the (key, value) pair indexed with the index when sorted.
 	const std::pair<K,V>& operator[](int index) const
 	{
 		return S[index];
 	}
 	
+	// Removes the (key, value) pair at position index.
+	// Returns: an index to the previous element if existent, otherwise to the first element.
 	int Erase(int index)
 	{
 		S.erase(index);
@@ -94,6 +103,7 @@ public:
 		return S.rend();
 	}
 	
+	// Prints the (key, value) pair sequence sorted by key.
 	virtual void Print(std::ostream& os) const
 	{
 		os << S;
