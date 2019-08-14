@@ -4,7 +4,7 @@
 // Departamento de Computacion - Universidad de Buenos Aires.
 //
 
-#include "goc/debug/debug_utils.h"
+#include "goc/runner/runner_utils.h"
 #include "goc/exception/exception_utils.h"
 #include "goc/string/string_utils.h"
 #include "goc/lib/json.hpp"
@@ -23,10 +23,9 @@ namespace
 // The input that will be added to STDIN.
 stringstream custom_cin;
 }
-void simulate_input_in_debug(const string& dataset_dir, const string& instance_name, const string& experiment_path,
+void simulate_runner_input(const string& dataset_dir, const string& instance_name, const string& experiment_path,
 							 const string& experiment_name)
 {
-#ifndef NDEBUG
 	// Read experiments_old from file.
 	ifstream experiment_file(experiment_path);
 	if (!experiment_file.good()) fail("The experiment file does not exist.");
@@ -56,6 +55,5 @@ void simulate_input_in_debug(const string& dataset_dir, const string& instance_n
 	
 	// Move the stream custon_cin to cin.
 	cin.rdbuf(custom_cin.rdbuf());
-#endif
 }
 } // namespace goc

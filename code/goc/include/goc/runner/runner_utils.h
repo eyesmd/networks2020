@@ -4,8 +4,8 @@
 // Departamento de Computacion - Universidad de Buenos Aires.
 //
 
-#ifndef GOC_DEBUG_DEBUG_UTILS_H
-#define GOC_DEBUG_DEBUG_UTILS_H
+#ifndef GOC_RUNNER_RUNNER_UTILS_H
+#define GOC_RUNNER_RUNNER_UTILS_H
 
 #include <string>
 
@@ -17,8 +17,8 @@ namespace goc
 // inputs the 'experiment_name'. Also if the instance has solutions in the corresponding solutions.json file then it
 // inputs those solutions too.
 // Effect: adds to STDIN << experiment << instance << solutions;
-void simulate_input_in_debug(const std::string& dataset_dir, const std::string& instance_name,
+void simulate_runner_input(const std::string& dataset_dir, const std::string& instance_name,
 							 const std::string& experiment_path, const std::string& experiment_name);
 } // namespace goc
 
-#endif // GOC_DEBUG_DEBUG_UTILS_H
+#endif // GOC_RUNNER_RUNNER_UTILS_H
