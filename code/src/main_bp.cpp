@@ -55,6 +55,7 @@ int main(int argc, char** argv)
 	bool sort_by_cost = value_or_default(experiment, "sort_by_cost", true);
 	bool symmetric = value_or_default(experiment, "symmetric", false);
 	bool iterative_merge = value_or_default(experiment, "iterative_merge", true);
+	bool exact_labeling = value_or_default(experiment, "exact_labeling", true);
 	
 	
 	// Show experiment details.
@@ -68,6 +69,7 @@ int main(int argc, char** argv)
 	clog << "Sort by cost: " << sort_by_cost << endl;
 	clog << "Symmetric: " << symmetric << endl;
 	clog << "Iterative merge: " << iterative_merge << endl;
+	clog << "Exact labeling: " << exact_labeling << endl;
 	
 	// Preprocess instance JSON.
 	clog << "Preprocessing..." << endl;
@@ -103,7 +105,7 @@ int main(int argc, char** argv)
 	lbl.symmetric = symmetric;
 	
 	int heuristic_level = 0; // 0: relax cost, 1: relax elementarity, 2: exact
-	int max_level = 2; // exact
+	int max_level = exact_labeling ? 1 : 2; // exact
 	vector<string> level_name = { "Heuristic Cost", "Heuristic Elementarity", "Exact" };
 	bcp.pricing_solver = [&] (const PricingProblem& pricing_problem, int node_number, Duration tlimit, CGExecutionLog* cg_execution_log)
 	{

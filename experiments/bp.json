@@ -1,17 +1,70 @@
 {
-  "datasets": [{"name": "dabia_et_al_2013", "select":  "!HARD"}],
+  "datasets": [{"name": "dabia_et_al_2013"}],
   "experiments": [
+    {
+      "name": "BP-BASE",
+      "executable": "bp",
+      "time_limit": 7200,
+      "cut_limit": 0,
+      "partial": false,
+      "limited_extension": false,
+      "unreachable_strengthened": false,
+      "sort_by_cost": false,
+      "symmetric": true,
+      "iterative_merge": false,
+      "exact_labeling": true
+    },
+    {
+      "name": "BP-IMPL",
+      "executable": "bp",
+      "time_limit": 7200,
+      "cut_limit": 0,
+      "partial": false,
+      "limited_extension": true,
+      "unreachable_strengthened": true,
+      "sort_by_cost": true,
+      "symmetric": true,
+      "iterative_merge": true,
+      "exact_labeling": true
+    },
     {
       "name": "BP-PART",
       "executable": "bp",
       "time_limit": 7200,
-      "cut_limit": 0
+      "cut_limit": 0,
+      "partial": true,
+      "limited_extension": true,
+      "unreachable_strengthened": true,
+      "sort_by_cost": true,
+      "symmetric": true,
+      "iterative_merge": true,
+      "exact_labeling": true
     },
     {
       "name": "BP-CUTS",
       "executable": "bp",
       "time_limit": 7200,
-      "cut_limit": 500
+      "cut_limit": 500,
+      "partial": true,
+      "limited_extension": true,
+      "unreachable_strengthened": true,
+      "sort_by_cost": true,
+      "symmetric": true,
+      "iterative_merge": true,
+      "exact_labeling": true
+    },
+    {
+      "name": "BP-BASE-CUTS",
+      "executable": "bp",
+      "time_limit": 7200,
+      "cut_limit": 500,
+      "partial": false,
+      "limited_extension": false,
+      "unreachable_strengthened": false,
+      "sort_by_cost": false,
+      "symmetric": true,
+      "iterative_merge": false,
+      "exact_labeling": true
     }
   ]
 }

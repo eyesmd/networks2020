@@ -1,0 +1,33 @@
+{
+  "datasets": [{"name": "dabia_et_al_2013", "select":  "!HARD"}],
+  "experiments": [
+    {
+      "name": "BP-ROOT",
+      "executable": "bp",
+      "time_limit": 7200,
+      "cut_limit": 0,
+      "partial": true,
+      "limited_extension": true,
+      "unreachable_strengthened": true,
+      "sort_by_cost": true,
+      "symmetric": false,
+      "iterative_merge": true,
+      "exact_labeling": true,
+      "node_limit": 1
+    },
+    {
+      "name": "BP-HEUR",
+      "executable": "bp",
+      "time_limit": 7200,
+      "cut_limit": 0,
+      "partial": true,
+      "limited_extension": true,
+      "unreachable_strengthened": true,
+      "sort_by_cost": true,
+      "symmetric": false,
+      "iterative_merge": true,
+      "exact_labeling": false,
+      "node_limit": 1
+    }
+  ]
+}

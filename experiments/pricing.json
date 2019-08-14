@@ -60,6 +60,18 @@
       "unreachable_strengthened": true,
       "sort_by_cost": true,
       "symmetric": false
+    },
+    {
+      "name": "Part-Basic",
+      "executable": "pricing",
+      "time_limit": 3600,
+      "correcting": false,
+      "partial": false,
+      "limited_extension": false,
+      "lazy_extension": false,
+      "unreachable_strengthened": false,
+      "sort_by_cost": false,
+      "symmetric": true
     }
   ]
 }
