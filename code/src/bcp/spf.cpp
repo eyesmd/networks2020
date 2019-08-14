@@ -93,8 +93,15 @@ PricingProblem SPF::InterpretDuals(const vector<double>& duals) const
 	PricingProblem pp;
 	pp.P = vector<double>(duals.begin(), duals.begin()+n);
 	pp.A = forbidden_arcs;
-	pp.S = cuts;
-	pp.sigma = vector<double>(duals.begin()+n, duals.begin()+n+cuts.size());
+	// Only add cuts to the pricing problem with duals != 0.
+	for (int i = 0; i < cuts.size(); ++i)
+	{
+		if (epsilon_different(duals[n+i], 0.0))
+		{
+			pp.S.push_back(cuts[i]);
+			pp.sigma.push_back(duals[n+i]);
+		}
+	}
 	return pp;
 }
 

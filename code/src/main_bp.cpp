@@ -35,11 +35,11 @@ double path_cost(const VRPInstance& vrp, PricingProblem pp, GraphPath p)
 	- sum<int>(range(0, pp.S.size()), [&] (int i) { return intersection(pp.S[i], ppp).count() >= 2 ? pp.sigma[i] : 0.0; });
 }
 
-int main()
+int main(int argc, char** argv)
 {
 	json output; // STDOUT output will go into this JSON.
 	
-	simulate_input_in_debug("instances/dabia_et_al_2013", "R211_50", "experiments/bp.json", "BP-CUTS");
+	if (argc > 1) simulate_runner_input("instances/dabia_et_al_2013", "R210_50", "experiments/bp.json", "BP-CUTS");
 	
 	json experiment, instance, solutions;
 	cin >> experiment >> instance >> solutions;

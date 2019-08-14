@@ -19,9 +19,9 @@
       "time_limit": 3600,
       "correcting": false,
       "partial": false,
-      "limited_extension": false,
-      "lazy_extension": false,
-      "unreachable_strengthened": false,
+      "limited_extension": true,
+      "lazy_extension": true,
+      "unreachable_strengthened": true,
       "sort_by_cost": true,
       "symmetric": true
     },

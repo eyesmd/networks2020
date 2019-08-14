@@ -31,11 +31,11 @@ ProfitUnit path_profit(const GraphPath& p, const vector<ProfitUnit>& profits)
 }
 }
 
-int main()
+int main(int argc, char** argv)
 {
 	json output; // STDOUT output will go into this JSON.
-	
-	simulate_input_in_debug("instances/cuts", "R211_50", "experiments/pricing_cuts.json", "Part");
+
+	if (argc > 1) simulate_runner_input("instances/networks_2019b", "RC204_25_a", "experiments/pricing.json", "Basic");
 	
 	json experiment, instance, solutions;
 	cin >> experiment >> instance >> solutions;
@@ -78,6 +78,7 @@ int main()
 	clog << "Running pricing algorithm..." << endl;
 	BidirectionalLabeling lbl(vrp);
 	lbl.screen_output = &clog;
+	lbl.time_limit = time_limit;
 	lbl.correcting = correcting;
 	lbl.partial = partial;
 	lbl.limited_extension = limited_extension;

@@ -320,7 +320,7 @@ bool BCP::	SeparateCuts(const Valuation& z)
 	}
 	
 	// Add cut if found.
-	if (epsilon_bigger(best_violation, 0.0)) spf->AddCut(best);
-	return epsilon_bigger(best_violation, 0.0);
+	if (epsilon_bigger(best_violation, 0.1)) spf->AddCut(best);
+	return epsilon_bigger(best_violation, 0.1);
 }
 } // namespace networks2019

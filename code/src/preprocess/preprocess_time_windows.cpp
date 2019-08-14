@@ -106,20 +106,6 @@ void preprocess_time_windows(json& instance)
 	// Transpose LDT so LDT[i][j] is latest departure time from i to reach j.
 	for (int i = 0; i < n; ++i) for (int j = i+1; j < n; ++j) swap(LDT[i][j], LDT[j][i]);
 	
-	// Initialize BEFORE(k) = { i | EAT(k, i) > b_i }.
-	vector<vector<Vertex>> BEFORE(n);
-	for (Vertex k: V)
-		for (Vertex i: exclude(V, {k}))
-			if (D.IncludesArc({i, k}))
-				if (epsilon_bigger(EAT[k][i], b(i))) BEFORE[k].push_back(i);
-	
-	// Initialize AFTER(k) = { j | EAT(j, k) > b_k }.
-	vector<vector<Vertex>> AFTER(n);
-	for (Vertex k: V)
-		for (Vertex j: exclude(V, {k}))
-			if (D.IncludesArc({k, j}))
-				if (epsilon_bigger(EAT[j][k], b(k))) AFTER[k].push_back(j);
-	
 	// Rule 1: (3.12) 	Upper bound adjustment derived from the latest arrival time at node k from its predecessors,
 	//					for k \in N - {o, d}.
 	for (Vertex k:exclude(V, {o,d}))
