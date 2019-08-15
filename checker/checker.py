@@ -148,7 +148,8 @@ def main():
 			instance = read_instance(dataset_name, instance_name)
 			bks = best_known_solution(dataset_name, instance_name)
 
-			opt_found = output["stdout"]["Exact"]["status"] == "Optimum" or output["stdout"]["Exact"]["status"] == "Finished" # Indicates if the optimum solution was found.
+			status = output["stdout"]["Exact"]["status"]
+			opt_found = status == "Optimum" or status == "Finished" # Indicates if the optimum solution was found.
 			if "Best solution" in output["stdout"]:
 				solution = output["stdout"]["Best solution"]
 				errors = []
@@ -164,7 +165,7 @@ def main():
 				else:
 					ok += 1
 			else:
-				print(F"Checking {experiment_name} - {dataset_name} {instance_name}: {purple('No solution (' + output["stdout"]["Exact"]["status"] + ')')}")
+				print(F"Checking {experiment_name} - {dataset_name} {instance_name}: {purple('No solution (' + status + ')')}")
 				skip += 1
 
 
