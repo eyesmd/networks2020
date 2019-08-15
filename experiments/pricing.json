@@ -66,12 +66,12 @@
       "executable": "pricing",
       "time_limit": 3600,
       "correcting": false,
-      "partial": false,
+      "partial": true,
       "limited_extension": false,
       "lazy_extension": false,
       "unreachable_strengthened": false,
       "sort_by_cost": false,
-      "symmetric": true
+      "symmetric": false
     }
   ]
 }
