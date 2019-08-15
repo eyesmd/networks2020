@@ -164,7 +164,7 @@ def main():
 				else:
 					ok += 1
 			else:
-				print(F"Checking {experiment_name} - {dataset_name} {instance_name}: {purple('No solution')}")
+				print(F"Checking {experiment_name} - {dataset_name} {instance_name}: {purple('No solution (' + output["stdout"]["Exact"]["status"] + ')')}")
 				skip += 1
 
 
