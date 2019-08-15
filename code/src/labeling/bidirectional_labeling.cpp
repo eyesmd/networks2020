@@ -184,7 +184,7 @@ BLBExecutionLog BidirectionalLabeling::Run(const PricingProblem& pricing_problem
 	}
 	
 	if (S.size() >= solution_limit) log.status = BLBStatus::SolutionLimitReached;
-	else log.status = BLBStatus::Finished;
+	else if (log.status == BLBStatus::DidNotStart) log.status = BLBStatus::Finished;
 	*log.time += rolex.Pause();
 	
 	// Add solutions from the pool to the return vector R.
