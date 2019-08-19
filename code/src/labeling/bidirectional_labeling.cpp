@@ -179,7 +179,7 @@ BLBExecutionLog BidirectionalLabeling::Run(const PricingProblem& pricing_problem
 	if (S.size() < solution_limit && rolex.Peek() < time_limit)
 	{
 		merge_rolex.Reset().Resume();
-		LastEdgeMerge(q[0], lbl_[1].U);
+		LastArcMerge(q[0], lbl_[1].U);
 		*log.merge_time += merge_rolex.Pause();
 	}
 	
@@ -214,7 +214,7 @@ void BidirectionalLabeling::IterativeMerge(Label* l, const MonodirectionalLabeli
 	}
 }
 
-void BidirectionalLabeling::LastEdgeMerge(LBQueue& qf, const MonodirectionalLabeling::DominanceStructure& Lb)
+void BidirectionalLabeling::LastArcMerge(LBQueue& qf, const MonodirectionalLabeling::DominanceStructure& Lb)
 {
 	TimeUnit T = vrp_.T;
 	

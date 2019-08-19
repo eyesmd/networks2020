@@ -50,7 +50,7 @@ private:
 	// 		if w == -1, then the check v(parent(m)) == w is ignored.
 	void IterativeMerge(Label* l, const MonodirectionalLabeling::DominanceStructure& L);
 	
-	void LastEdgeMerge(LBQueue& qf, const MonodirectionalLabeling::DominanceStructure& Lb);
+	void LastArcMerge(LBQueue& qf, const MonodirectionalLabeling::DominanceStructure& Lb);
 	
 	void Merge(Label* l, Label* m);
 	
