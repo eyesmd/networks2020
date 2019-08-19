@@ -180,6 +180,9 @@ Label* MonodirectionalLabeling::ExtensionStep(const LazyLabel& ll) const
 	Vertex v = ll.v;
 	Vertex u = l->v;
 	
+	// If correcting and now reaching vertex v is infeasible, return nullptr.
+	if (correcting && vrp_.ArrivalTime({u, v}, l->rw.left) == INFTY) return nullptr;
+	
 	// Check if depot triangle inequality holds.
 	// If max(rw(lv)) < a_v and tau_u0v(max(rw(lv))) <= a_v - max(rw(lv)) then ignore label.
 	if (epsilon_smaller(l->rw.right, vrp_.tw[v].left) && vrp_.D.IncludesArc({u, vrp_.d}) && vrp_.D.IncludesArc({vrp_.o, v}))
