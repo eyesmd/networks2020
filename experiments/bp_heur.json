@@ -12,6 +12,7 @@
       "sort_by_cost": true,
       "symmetric": false,
       "iterative_merge": true,
+      "lazy_extension": true,
       "exact_labeling": true,
       "node_limit": 1
     },
@@ -26,6 +27,7 @@
       "sort_by_cost": true,
       "symmetric": false,
       "iterative_merge": true,
+      "lazy_extension": true,
       "exact_labeling": false,
       "node_limit": 1
     }

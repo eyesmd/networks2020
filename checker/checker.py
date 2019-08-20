@@ -133,17 +133,17 @@ def main():
 		print(F"Checking {output_file.name}")
 
 		for output in output_file_json["outputs"]:
+			dataset_name = output["dataset_name"]
+			instance_name = output["instance_name"]
+			experiment_name = output["experiment_name"]
 			if output["exit_code"] == -6:
 				mlim += 1
 				print(F"Checking {experiment_name} - {dataset_name} {instance_name}: {purple('Memory limit.')}")
 				continue
 			if output["exit_code"] != 0:
 				error += 1
-				print(F"Checking {experiment_name} - {dataset_name} {instance_name}: {purple('Exit code: ' + output['exit_code'])}")
+				print(F"Checking {experiment_name} - {dataset_name} {instance_name}: {purple('Exit code: ' + str(output['exit_code'])}")
 				continue
-			dataset_name = output["dataset_name"]
-			instance_name = output["instance_name"]
-			experiment_name = output["experiment_name"]
 
 			instance = read_instance(dataset_name, instance_name)
 			bks = best_known_solution(dataset_name, instance_name)

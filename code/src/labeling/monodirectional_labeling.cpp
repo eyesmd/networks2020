@@ -315,8 +315,13 @@ vector<LazyLabel> MonodirectionalLabeling::EnumerationStep(Label* l) const
 		if (epsilon_bigger(l->q + vrp_.q[v], vrp_.Q)) continue;
 		if (epsilon_bigger(min(l->rw), max(dom(vrp_.arr[l->v][v])))) continue;
 		double makespan = vrp_.arr[l->v][v](max(min(l->rw), min(dom(vrp_.arr[l->v][v]))));
-		LazyLabel ll{l, v, makespan};
-		if (!lazy_extension) ll.extension = ExtensionStep(ll);
+		LazyLabel ll{l, v, cross ? l->rw.left : makespan};
+		if (!lazy_extension)
+		{
+			ll.extension = ExtensionStep(ll);
+			if (!ll.extension) continue;
+			ll.makespan = ll.extension->rw.left;
+		}
 		E.push_back(ll);
 	}
 	return E;
