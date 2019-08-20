@@ -142,7 +142,7 @@ def main():
 				continue
 			if output["exit_code"] != 0:
 				error += 1
-				print(F"Checking {experiment_name} - {dataset_name} {instance_name}: {purple('Exit code: ' + str(output['exit_code'])}")
+				print(F"Checking {experiment_name} - {dataset_name} {instance_name}: {purple('Exit code: ' + str(output['exit_code']))}")
 				continue
 
 			instance = read_instance(dataset_name, instance_name)
