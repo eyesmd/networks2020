@@ -43,7 +43,7 @@ arg_parser.add_argument("--instances", "-I", nargs="*", help="Only execute exper
 arg_parser.add_argument("--exps", "-E", nargs="*", help="Only execute selected experiment(s) (with these names).")
 arg_parser.add_argument("--callgrind", "-C", help="Runs the experiment(s) using callgrind.", action="store_true")
 arg_parser.add_argument("--valgrind", "-V", help="Runs the experiment(s) using valgrind.", action="store_true")
-arg_parser.add_argument("--memlimit", "-M", help="Sets a memory limit in GB (default 64GB).", default=64.0)
+arg_parser.add_argument("--memlimit", "-M", help="Sets a memory limit in GB (default 15GB).", default=15.0)
 arg_parser.add_argument("--silent", "-S", help="Do not print the stderr stream of the experiments to the screen.", action="store_true")
 
 # Read command line parameters.
