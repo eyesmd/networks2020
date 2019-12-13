@@ -1,4 +1,4 @@
-import sys, os, json, datetime, os, argparse, resource, subprocess, ntpath
+import sys, os, json, datetime, os, argparse, resource, subprocess, ntpath, select
 
 RUNNER_DIR = os.path.abspath(os.path.dirname(__file__)) # Directory where runner files are located.
 CURRENT_DIR = os.path.abspath(os.getcwd()) # Current directory in the command line.
@@ -27,6 +27,38 @@ def green(text): return "\033[92m" + text + "\033[0m"
 # Returns: text in color purple for console.
 def purple(text): return "\033[95m" + text + "\033[0m"
 
+def run_program(bin, input_string="", memlim_gb=1024, silent=False):
+	# Function that sets limit on memory when executable starts.
+	def set_memory_limit():
+		soft, hard = resource.getrlimit(resource.RLIMIT_AS)
+		resource.setrlimit(resource.RLIMIT_AS, (memlim_gb*1024*1024*1024, hard))
+
+	t_start = datetime.datetime.now()
+	process = subprocess.Popen(bin, stderr=subprocess.PIPE, stdout=subprocess.PIPE, stdin=subprocess.PIPE, preexec_fn=set_memory_limit, universal_newlines = True)
+	if input_string != "": process.stdin.write(input_string) # Write to STDIN.
+	process.stdin.flush()
+
+	stderr_string = ""
+	stdout_string = ""
+	readable = { process.stdout.fileno(): 1, process.stderr.fileno(): 2 }
+	while readable:
+		for fd in select.select(readable, [], [])[0]:
+			data = os.read(fd, 1024) # read available
+			if not data: # EOF
+				del readable[fd]
+			else:
+				if readable[fd] == 1: stdout_string += data.decode("utf-8")
+				else:
+					stderr_string += data.decode("utf-8")
+					if not silent: sys.stdout.buffer.write(data)
+					if not silent: sys.stdout.buffer.flush()				
+	exit_code = process.wait()
+	t_end = datetime.datetime.now()
+	process.stdout.close()
+	process.stderr.close()
+
+	return {"exit_code": exit_code, "stdout": stdout_string, "stderr": stderr_string, "time": (t_end-t_start).total_seconds() }
+
 # Load runner config file where configurations are stored.
 config = read_json_from_file(F"{RUNNER_DIR}/config.json")
 
@@ -43,6 +75,7 @@ arg_parser.add_argument("--instances", "-I", nargs="*", help="Only execute exper
 arg_parser.add_argument("--exps", "-E", nargs="*", help="Only execute selected experiment(s) (with these names).")
 arg_parser.add_argument("--callgrind", "-C", help="Runs the experiment(s) using callgrind.", action="store_true")
 arg_parser.add_argument("--valgrind", "-V", help="Runs the experiment(s) using valgrind.", action="store_true")
+arg_parser.add_argument("--heaptrack", "-H", help="Runs the experiment(s) using heaptrack.", action="store_true")
 arg_parser.add_argument("--memlimit", "-M", help="Sets a memory limit in GB (default 15GB).", default=15.0)
 arg_parser.add_argument("--silent", "-S", help="Do not print the stderr stream of the experiments to the screen.", action="store_true")
 
@@ -53,6 +86,7 @@ selected_instances = args["instances"]
 selected_experiments = args["exps"]
 use_callgrind = args["callgrind"]
 use_valgrind = args["valgrind"]
+use_heaptrack = args["heaptrack"]
 memlimit_gb = float(args["memlimit"])
 silent = args["silent"]
 
@@ -102,7 +136,7 @@ def compile():
 	print(purple("Compiling code"), flush=True)
 	t0 = datetime.datetime.now()
 	os.chdir(F"{OBJ_DIR}/{build_type}")
-	exit_code = subprocess.call(["cmake", F"{CMAKELISTS_DIR}", F"-DCMAKE_BUILD_TYPE={build_type}"])
+	exit_code = subprocess.call(["cmake", F"{CMAKELISTS_DIR}", F"-DCMAKE_BUILD_TYPE={build_type}", F"-DRUNNER=ON"])
 	if exit_code == 0: exit_code = subprocess.call(["make"])
 	os.chdir(CURRENT_DIR)
 	if exit_code == 0:
@@ -121,52 +155,31 @@ def compile():
 #	If success == false: it also has the attributes {"exit_code":number, ""}
 def run_experiment(experiment, instance, solutions):
 	# Get executable command depending on whether valgrind or callgrind are enabled.
-	executable = []
 	executable_path = F"{OBJ_DIR}/{build_type}/{experiment['executable']}"
-	if use_valgrind: 
-		executable = ["valgrind", "--track-origins=yes", executable_path]
-	elif use_callgrind: 
-		executable = ["valgrind", "--tool=callgrind", executable_path]
-	else:
-		executable = [executable_path]
+	executable = [executable_path]
+	if use_valgrind: executable = ["valgrind", "--track-origins=yes", executable_path]
+	elif use_callgrind: executable = ["valgrind", "--tool=callgrind", executable_path]
+	elif use_heaptrack: executable = ["heaptrack", executable_path]
 
-	# Function that sets limit on memory when executable starts.
-	def set_memory_limit():
-		soft, hard = resource.getrlimit(resource.RLIMIT_AS)
-		resource.setrlimit(resource.RLIMIT_AS, (memlimit_gb*1024*1024*1024, hard))
+	# Execute experiment.
+	result = run_program(executable, F"{json.dumps(experiment)}{json.dumps(instance)}{json.dumps(solutions)}", memlimit_gb, silent)
 
-	# Measure time.
-	t_start = datetime.datetime.now()
-
-	# Open process execution for executable and send STDIN.
-	process = subprocess.Popen(executable, stderr=subprocess.PIPE, stdout=subprocess.PIPE, stdin=subprocess.PIPE, preexec_fn=set_memory_limit, universal_newlines = True)
-	process.stdin.write(json.dumps(experiment)) # First input: the experiment.
-	process.stdin.write(json.dumps(instance))	# Second input: the instance.
-	process.stdin.write(json.dumps(solutions)) 	# Third input: the solutions.
-	(stdout_string, stderr_string) = process.communicate()
-	exit_code = process.wait()
-	process.stdout.close()
-	process.stderr.close()
-
-	if not silent: print(stderr_string)
-
-	t_end = datetime.datetime.now()
-
+	# Try to parse STDOUT as JSON, otherwise leave it as string.
 	stdout_json = ""
-	try:
-		stdout_json = json.loads(stdout_string)
+	try: 
+		stdout_json = json.loads(result["stdout"])
 	except:
-		stdout_json = stdout_string
+		stdout_json = result["stdout"]
 
 	# If experiment finished successfuly, return the observation and the metadata.
 	return {
 		"dataset_name":instance["dataset_name"], 
 		"instance_name":instance["instance_name"], 
 		"experiment_name":experiment["name"], 
-		"stderr": stderr_string, 
+		"stderr": result["stderr"], 
 		"stdout": stdout_json, 
-		"exit_code": exit_code,
-		"time": (t_end - t_start).total_seconds()
+		"exit_code": result["exit_code"],
+		"time": result["time"]
 	}
 
 def main():
