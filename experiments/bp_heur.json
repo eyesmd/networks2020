@@ -1,5 +1,5 @@
 {
-  "datasets": [{"name": "dabia_et_al_2013", "select":  "!HARD"}],
+  "datasets": [{"name": "dabia_et_al_2013"}],
   "experiments": [
     {
       "name": "BP-ROOT",
