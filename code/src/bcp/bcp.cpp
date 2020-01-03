@@ -73,6 +73,7 @@ BCPExecutionLog BCP::Run(VRPSolution* solution)
 	clog << "Processing root node." << endl;
 	Node* root = new Node{0, INFTY, {}};
 	ProcessNode(root);
+	log.root_time = rolex.Peek();
 	
 	if (!q.empty())
 	{

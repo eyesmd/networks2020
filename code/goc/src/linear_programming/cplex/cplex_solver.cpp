@@ -452,7 +452,7 @@ LPExecutionLog solve_lp(CplexFormulation* formulation, ostream* screen_output, D
 	apply_configuration(formulation, config);
 	
 	// Apply time limit.
-	cplex::setdblparam(formulation->Environment(), CPX_PARAM_TILIM, time_limit.Amount(DurationUnit::Seconds));
+	cplex::setdblparam(formulation->Environment(), CPX_PARAM_TILIM, max(0.0, time_limit.Amount(DurationUnit::Seconds)));
 	cplex::setintparam(formulation->Environment(), CPX_PARAM_REDUCE, CPX_PREREDUCE_NOPRIMALORDUAL);
 	
 	// Change problem to LP, but before save the domain of variables, because changing the problem type to LP erases
@@ -518,7 +518,7 @@ BCExecutionLog solve_bc(CplexFormulation* formulation, ostream* screen_output, D
 	}
 	
 	// Apply time limit.
-	cplex::setdblparam(formulation->Environment(), CPX_PARAM_TILIM, time_limit.Amount(DurationUnit::Seconds));
+	cplex::setdblparam(formulation->Environment(), CPX_PARAM_TILIM, max(0.0, time_limit.Amount(DurationUnit::Seconds)));
 	
 	// Set problem type to integer and set all variable domains.
 	cplex::chgprobtype(formulation->Environment(), formulation->Problem(), CPXPROB_MILP);

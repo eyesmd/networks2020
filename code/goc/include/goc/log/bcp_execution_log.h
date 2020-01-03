@@ -25,6 +25,7 @@ namespace goc
 class BCPExecutionLog : public BCExecutionLog
 {
 public:
+	Maybe<Duration> root_time; // time spent solving the root node.
 	Maybe<int> root_constraint_count; // number of constraints after solving the root node.
 	Maybe<int> root_variable_count; // number of variables after solving the root node.
 	Maybe<int> final_constraint_count; // number of constraints at the end of the execution.

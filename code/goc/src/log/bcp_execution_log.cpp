@@ -15,6 +15,7 @@ json BCPExecutionLog::ToJSON() const
 {
 	json j = BCExecutionLog::ToJSON();
 	j["kd_type"] = "bcp";
+	if (root_time.IsSet()) j["root_time"] = root_time.Value();
 	if (root_constraint_count.IsSet()) j["root_constraint_count"] = root_constraint_count.Value();
 	if (root_variable_count.IsSet()) j["root_variable_count"] = root_variable_count.Value();
 	if (final_constraint_count.IsSet()) j["final_constraint_count"] = final_constraint_count.Value();
