@@ -74,7 +74,7 @@ BCPExecutionLog BCP::Run(VRPSolution* solution)
 	Node* root = new Node{0, INFTY, {}};
 	ProcessNode(root);
 	log.root_time = rolex.Peek();
-	
+
 	if (!q.empty())
 	{
 		clog << "Solving BC with existing columns to get an UB." << endl;
@@ -114,8 +114,13 @@ BCPExecutionLog BCP::Run(VRPSolution* solution)
 		// Delete nodes that were not processed.
 		while (!q.empty()) { delete q.top(); q.pop(); }
 	}
-	
-	if (log.status == BCStatus::DidNotStart) log.status = BCStatus::Optimum;
+
+	// If log was not changed to some error (time limit, memory limit, ...) then optimum was found.
+	if (log.status == BCStatus::DidNotStart)
+	{
+		log.status = BCStatus::Optimum;
+		z_lb = z_ub;
+	}
 	log.time = rolex.Peek();
 	
 	// Set bounds and solutions found.
