@@ -24,7 +24,7 @@
       "limited_extension": true,
       "unreachable_strengthened": true,
       "sort_by_cost": true,
-      "symmetric": true,
+      "symmetric": false,
       "iterative_merge": true,
       "lazy_extension": true,
       "exact_labeling": true
@@ -38,7 +38,7 @@
       "limited_extension": true,
       "unreachable_strengthened": true,
       "sort_by_cost": true,
-      "symmetric": true,
+      "symmetric": false,
       "iterative_merge": true,
       "lazy_extension": true,
       "exact_labeling": true
@@ -52,7 +52,7 @@
       "limited_extension": true,
       "unreachable_strengthened": true,
       "sort_by_cost": true,
-      "symmetric": true,
+      "symmetric": false,
       "iterative_merge": true,
       "lazy_extension": true,
       "exact_labeling": true
