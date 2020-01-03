@@ -24,7 +24,7 @@
       "limited_extension": true,
       "unreachable_strengthened": true,
       "sort_by_cost": true,
-      "symmetric": false,
+      "symmetric": true,
       "iterative_merge": true,
       "lazy_extension": true,
       "exact_labeling": true
