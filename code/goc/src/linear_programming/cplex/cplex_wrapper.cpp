@@ -280,7 +280,12 @@ void mipopt(CPXENVptr env, CPXLPptr lp)
 void lpopt(CPXENVptr env, CPXLPptr lp)
 {
 	int status = CPXlpopt(env, lp);
-	if (status != 0)
+	if (status == CPXERR_NO_MEMORY)
+	{
+		clog << "CPLEX out of memory while performing lpopt(...)." << endl;
+		throw bad_alloc();
+	}
+	else if (status != 0)
 	{
 		fail_with_error_message(env, status, "CPXlpopt");
 	}
