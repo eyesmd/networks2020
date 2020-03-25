@@ -1,5 +1,5 @@
 # Linear edge costs and labeling algorithms: The case of the time‐dependent vehicle routing problem with time windows
-Source code to replicate the experiments.
+Source code to replicate the experiments from the article https://doi.org/10.1002/net.21937
 
 > Note: The source code here is not the exact version executed for the article. Instead, it has been improved for readibility and therefore some minor modifications might have been considered. However, it is still valid for the sake of reproducibility.
 
