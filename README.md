@@ -48,7 +48,7 @@ There are eight experiment files. Which together comprise all the experiments ca
 * _Section 7.4_: bp_heur.json
 
 ### Visualizing the experiment results.
-1. Go to the folder kaleidoscope and open the file index.html with a Web Browser (Chrome prefered).
+1. Go to https://gleraromero.github.io/kaleidoscope/networks2020
 1. Add the output file.
 1. Select the experiments.
 1. Add some attributes to visualize.
