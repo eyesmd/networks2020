@@ -116,6 +116,30 @@ void preprocess_travel_times(json& instance)
 	Matrix<PWLFunction> tau(D.VertexCount(), D.VertexCount());
 	for (Arc e: D.Arcs())
 		tau[e.tail][e.head] = compute_travel_time_function(instance, e);
-	instance["travel_times"] = tau;
+
+	// Quickest paths algorithm
+	Matrix<PWLFunction> xxxx(D.VertexCount(), D.VertexCount());
+	auto full_interval = Interval(0, instance["horizon"][1]);
+	for (Vertex v : D.Vertices()) {
+		auto& xx = xxxx[v];
+		for (Vertex w : D.Vertices()) {
+			if (w == v) {
+				xx[w] = PWLFunction::IdentityFunction(full_interval);
+			} else {
+				xx[w] = PWLFunction::ConstantFunction(INFTY, full_interval);
+			}
+		}
+
+		for (int i = 0; i <= D.VertexCount(); i++) { // Could be done better
+			for (Vertex from : D.Vertices()) {
+				for (Arc e : D.OutboundArcs(from)) {
+					auto yy = xx[e.tail].Compose(tau[e.tail][e.head]);
+					xx[from] = Min(xx[from], yy);
+				}
+			}
+		}
+	}
+
+	instance["travel_times"] = xxxx;
 }
 } // namespace networks2019
