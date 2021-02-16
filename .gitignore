@@ -41,6 +41,10 @@
 **/cmake-build-release/
 **.plist
 
+# vscode
+build
+.vscode
+
 # Ignore output files
 !output/.empty
 output/*
@@ -50,3 +54,6 @@ output/*
 
 # Ignore python execution files
 **/__pycache__
+
+
+

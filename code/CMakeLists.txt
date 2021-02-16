@@ -28,3 +28,6 @@ target_link_libraries(pricing networks2019)
 
 add_executable(bp src/main_bp.cpp)
 target_link_libraries(bp networks2019)
+
+# Create tests
+add_subdirectory(tst)
