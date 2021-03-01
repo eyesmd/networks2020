@@ -9,6 +9,8 @@
 
 #include <goc/goc.h>
 
+using namespace goc;
+
 namespace networks2019
 {
 // Takes a JSON instance of the vehicle routing problems with the following attributes:
@@ -21,6 +23,8 @@ namespace networks2019
 //	- time_windows (optional).
 // Adds the travel_times attribute to a JSON instance with a matrix of piecewise linear functions.
 void preprocess_travel_times(nlohmann::json& instance);
+
+Matrix<goc::PWLFunction> quickest_paths(Digraph D, Matrix<goc::PWLFunction> arriving_times, Interval horizon);
 } // namespace networks2019
 
 #endif //NETWORKS2019_PREPROCESS_TRAVEL_TIMES_H

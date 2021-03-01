@@ -110,36 +110,50 @@ PWLFunction compute_travel_time_function(const json& instance, Arc e)
 }
 }
 
-void preprocess_travel_times(json& instance)
+Matrix<PWLFunction> quickest_paths(Digraph D, Matrix<PWLFunction> arriving_times, Interval horizon)
 {
-	Digraph D = instance["digraph"];
-	Matrix<PWLFunction> tau(D.VertexCount(), D.VertexCount());
-	for (Arc e: D.Arcs())
-		tau[e.tail][e.head] = compute_travel_time_function(instance, e);
-
 	// Quickest paths algorithm
 	Matrix<PWLFunction> xxxx(D.VertexCount(), D.VertexCount());
-	auto full_interval = Interval(0, instance["horizon"][1]);
 	for (Vertex v : D.Vertices()) {
 		auto& xx = xxxx[v];
 		for (Vertex w : D.Vertices()) {
 			if (w == v) {
-				xx[w] = PWLFunction::IdentityFunction(full_interval);
+				xx[w] = PWLFunction::IdentityFunction(horizon);
 			} else {
-				xx[w] = PWLFunction::ConstantFunction(INFTY, full_interval);
+				// Empty PWLFunction
 			}
 		}
 
 		for (int i = 0; i <= D.VertexCount(); i++) { // Could be done better
 			for (Vertex from : D.Vertices()) {
 				for (Arc e : D.OutboundArcs(from)) {
-					auto yy = xx[e.tail].Compose(tau[e.tail][e.head]);
-					xx[from] = Min(xx[from], yy);
+					auto yy = xx[e.tail].Compose(arriving_times[e.tail][e.head]);
+					xx[e.head] = Min(xx[e.head], yy);
 				}
 			}
 		}
 	}
 
-	instance["travel_times"] = xxxx;
+	Matrix<PWLFunction> zzzz(D.VertexCount(), D.VertexCount());
+	for (Vertex v : D.Vertices()) {
+		for (Vertex w : D.Vertices()) {
+			zzzz[v][w] = xxxx[v][w] - PWLFunction::IdentityFunction(xxxx[v][w].Domain());
+		}
+	}
+
+	return zzzz;
+}
+
+
+void preprocess_travel_times(json& instance)
+{
+	Digraph D = instance["digraph"];
+	Matrix<PWLFunction> arriving_times(D.VertexCount(), D.VertexCount());
+	for (Arc e: D.Arcs()) {
+		PWLFunction tau = compute_travel_time_function(instance, e);
+		arriving_times[e.tail][e.head] = tau + PWLFunction::IdentityFunction(tau.Domain());
+	}
+
+	instance["travel_times"] = quickest_paths(D, arriving_times, instance["horizon"]);
 }
 } // namespace networks2019

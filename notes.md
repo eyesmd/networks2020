@@ -1,4 +1,25 @@
 
+Quickest Path Algorithm
+- More complex test
+- Refactor
+
+
+
+Tengo que reemplazar tanto 'tau' como 'arr', ¿no?
+'arr' creo que entiendo como queda, pero 'tau' no tanto.
+
+O sea, quickest paths es un pre-procesamiento, ¿no? Estoy transformando la instancia en una nueva, donde cada arista v-w representa tomar algún camino desde v hasta w.
+
+Ok, creo que siempre vale 'tau = arr - identity'. So there you go. Lo que puedo hacer es en mi pre-process, sumarle a tau la identidad.
+
+
+
+
+Si no es un pre-procesamiento.... Tendría que agregar un nuevo campo supongo, ¿y ver como usarlo? Mm... Tricky.
+
+
+
+
 # ROADMAP
 
 ## Objetivo
