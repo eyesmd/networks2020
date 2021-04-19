@@ -68,8 +68,8 @@ TEST(FirstTest, Dummy2) {
 TEST(FirstTest, Dummy3) {
     /*
      * 3 nodes.
-     * From A you can go to B in 10, and from B to C in 10.
-     * It's expected that 'travel_times' has an arc from A to C in 20.
+     * From A you can go to B in f(t), and from B to C in g(t).
+     * It's expected that 'travel_times' has an arc from A to C in an accordingly PWL.
      */
 
     nlohmann::json digraph;
@@ -95,8 +95,51 @@ TEST(FirstTest, Dummy3) {
     expected.AddPiece(LinearFunction(Point2D(5, 15+5), Point2D(10, 20+5)));
     expected.AddPiece(LinearFunction(Point2D(10, 20+5), Point2D(horizon_end - (20+5), 20+5)));
     ASSERT_EQ(expected, res[0][2]);
-
 }
+
+TEST(FirstTest, Dummy4) {
+    /*
+     * 4 nodes.
+     * From A you can go to B and C, and from B and C you can go to D.
+     * Earlier it's better to go to D through B, and later through C.
+     * It's expected that 'travel_times' has an arc from A to D reflecting that.
+     */
+
+    nlohmann::json digraph;
+    digraph["vertex_count"] = 4;
+    digraph["arcs"] = { {0, 1, 1, 0}, {0, 0, 0, 1}, {0, 0, 0, 1}, {0, 0, 0, 0} };
+
+    double horizon_end = 100;
+    Interval horizon(0, horizon_end);
+
+    Matrix<PWLFunction> travel_times(3, 3);
+    travel_times[0][1].AddPiece(LinearFunction(Point2D(0, 5), Point2D(10, 10)));
+    travel_times[0][1].AddPiece(LinearFunction(Point2D(10, 10), Point2D(horizon_end-10, 10)));
+    travel_times[0][1] = travel_times[0][1] + PWLFunction::IdentityFunction(travel_times[0][1].Domain());
+
+    travel_times[0][2].AddPiece(LinearFunction(Point2D(0, 10), Point2D(10, 5)));
+    travel_times[0][2].AddPiece(LinearFunction(Point2D(10, 5), Point2D(horizon_end-5, 5)));
+    travel_times[0][2] = travel_times[0][2] + PWLFunction::IdentityFunction(travel_times[0][2].Domain());
+
+    travel_times[1][3] = PWLFunction::ConstantFunction(2, Interval(0, horizon_end - 2));
+    travel_times[1][3] = travel_times[1][3] + PWLFunction::IdentityFunction(travel_times[1][3].Domain());
+
+    travel_times[2][3] = PWLFunction::ConstantFunction(2, Interval(0, horizon_end - 2));
+    travel_times[2][3] = travel_times[2][3] + PWLFunction::IdentityFunction(travel_times[2][3].Domain());
+
+    Matrix<PWLFunction> res = quickest_paths(digraph, travel_times, horizon);
+
+    goc::PWLFunction expected;
+    expected.AddPiece(LinearFunction(Point2D(0, 5+2), Point2D(5, 7.5+2)));
+    expected.AddPiece(LinearFunction(Point2D(5, 7.5+2), Point2D(10, 5+2)));
+    expected.AddPiece(LinearFunction(Point2D(10, 5+2), Point2D(horizon_end - (5+2), 5+2)));
+    ASSERT_EQ(expected, res[0][3]);
+}
+
+// The Asserts aren't really doing anything... Figure out why.
+
+// Dummy 5: Test that multiple runs of Bellman-Ford doesn't collide with each other.
+// So... Something like... A -> B -> C... But also B -> D -> A.
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

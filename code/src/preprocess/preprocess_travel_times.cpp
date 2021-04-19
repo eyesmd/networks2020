@@ -127,7 +127,7 @@ Matrix<PWLFunction> quickest_paths(Digraph D, Matrix<PWLFunction> arriving_times
 		for (int i = 0; i <= D.VertexCount(); i++) { // Could be done better
 			for (Vertex from : D.Vertices()) {
 				for (Arc e : D.OutboundArcs(from)) {
-					auto yy = xx[e.tail].Compose(arriving_times[e.tail][e.head]);
+					auto yy = arriving_times[e.tail][e.head].Compose(xx[e.tail]);
 					xx[e.head] = Min(xx[e.head], yy);
 				}
 			}
