@@ -1,0 +1,422 @@
+[
+    {
+        "file_name": "H_egl-e1-B.json",
+        "instance_name": "egl-e1-B",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_egl-s1-B.json",
+        "instance_name": "egl-s1-B",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_egl-g2-B.json",
+        "instance_name": "egl-g2-B",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_C02.json",
+        "instance_name": "C02",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_egl-s4-B.json",
+        "instance_name": "egl-s4-B",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_C05.json",
+        "instance_name": "C05",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_C03.json",
+        "instance_name": "C03",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_C09.json",
+        "instance_name": "C09",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_egl-s3-B.json",
+        "instance_name": "egl-s3-B",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_C01.json",
+        "instance_name": "C01",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_C07.json",
+        "instance_name": "C07",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_egl-e4-B.json",
+        "instance_name": "egl-e4-B",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_egl-s2-B.json",
+        "instance_name": "egl-s2-B",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_egl-e2-B.json",
+        "instance_name": "egl-e2-B",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_C08.json",
+        "instance_name": "C08",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_C04.json",
+        "instance_name": "C04",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_egl-g1-B.json",
+        "instance_name": "egl-g1-B",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_egl-e3-B.json",
+        "instance_name": "egl-e3-B",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_C06.json",
+        "instance_name": "C06",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "H_C10.json",
+        "instance_name": "C10",
+        "tags": [
+            "H"
+        ]
+    },
+    {
+        "file_name": "M_egl-e1-B.json",
+        "instance_name": "egl-e1-B",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_egl-s1-B.json",
+        "instance_name": "egl-s1-B",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_egl-g2-B.json",
+        "instance_name": "egl-g2-B",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_C02.json",
+        "instance_name": "C02",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_egl-s4-B.json",
+        "instance_name": "egl-s4-B",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_C05.json",
+        "instance_name": "C05",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_C03.json",
+        "instance_name": "C03",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_C09.json",
+        "instance_name": "C09",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_egl-s3-B.json",
+        "instance_name": "egl-s3-B",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_C01.json",
+        "instance_name": "C01",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_C07.json",
+        "instance_name": "C07",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_egl-e4-B.json",
+        "instance_name": "egl-e4-B",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_egl-s2-B.json",
+        "instance_name": "egl-s2-B",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_egl-e2-B.json",
+        "instance_name": "egl-e2-B",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_C08.json",
+        "instance_name": "C08",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_C04.json",
+        "instance_name": "C04",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_egl-g1-B.json",
+        "instance_name": "egl-g1-B",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_egl-e3-B.json",
+        "instance_name": "egl-e3-B",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_C06.json",
+        "instance_name": "C06",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "M_C10.json",
+        "instance_name": "C10",
+        "tags": [
+            "M"
+        ]
+    },
+    {
+        "file_name": "L_egl-e1-B.json",
+        "instance_name": "egl-e1-B",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_egl-s1-B.json",
+        "instance_name": "egl-s1-B",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_egl-g2-B.json",
+        "instance_name": "egl-g2-B",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_C02.json",
+        "instance_name": "C02",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_egl-s4-B.json",
+        "instance_name": "egl-s4-B",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_C05.json",
+        "instance_name": "C05",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_C03.json",
+        "instance_name": "C03",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_C09.json",
+        "instance_name": "C09",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_egl-s3-B.json",
+        "instance_name": "egl-s3-B",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_C01.json",
+        "instance_name": "C01",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_C07.json",
+        "instance_name": "C07",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_egl-e4-B.json",
+        "instance_name": "egl-e4-B",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_egl-s2-B.json",
+        "instance_name": "egl-s2-B",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_egl-e2-B.json",
+        "instance_name": "egl-e2-B",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_C08.json",
+        "instance_name": "C08",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_C04.json",
+        "instance_name": "C04",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_egl-g1-B.json",
+        "instance_name": "egl-g1-B",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_egl-e3-B.json",
+        "instance_name": "egl-e3-B",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_C06.json",
+        "instance_name": "C06",
+        "tags": [
+            "L"
+        ]
+    },
+    {
+        "file_name": "L_C10.json",
+        "instance_name": "C10",
+        "tags": [
+            "L"
+        ]
+    }
+]
