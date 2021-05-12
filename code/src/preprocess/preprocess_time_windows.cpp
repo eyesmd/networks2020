@@ -99,13 +99,6 @@ void preprocess_time_windows(json& instance)
 	auto set_a = [&] (Vertex i, double t) { instance["time_windows"][i][0] = t; };
 	auto set_b = [&] (Vertex i, double t) { instance["time_windows"][i][1] = t; };
 	
-	// Initialize EAT, LDT.
-	Matrix<double> EAT(n,n), LDT(n,n);
-	for (int i = 0; i < n; ++i) EAT[i] = compute_EAT(instance, i);
-	for (int j = 0; j < n; ++j) LDT[j] = compute_LDT(instance, j);
-	// Transpose LDT so LDT[i][j] is latest departure time from i to reach j.
-	for (int i = 0; i < n; ++i) for (int j = i+1; j < n; ++j) swap(LDT[i][j], LDT[j][i]);
-	
 	// Rule 1: (3.12) 	Upper bound adjustment derived from the latest arrival time at node k from its predecessors,
 	//					for k \in N - {o, d}.
 	for (Vertex k:exclude(V, {o,d}))

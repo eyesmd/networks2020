@@ -1,0 +1,19 @@
+{
+  "datasets": [{"name": "vidal_et_al_2020"}],
+  "experiments": [
+    {
+      "name": "TDCARP-BASE",
+      "executable": "tdcarp",
+      "time_limit": 7200,
+      "cut_limit": 0,
+      "partial": false,
+      "limited_extension": false,
+      "unreachable_strengthened": false,
+      "sort_by_cost": false,
+      "symmetric": true,
+      "iterative_merge": false,
+      "lazy_extension": false,
+      "exact_labeling": true
+    }
+  ]
+}

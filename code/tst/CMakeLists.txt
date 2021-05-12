@@ -26,8 +26,12 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
 # Add include directory
 include_directories("${gtest_SOURCE_DIR}/include")
 
+# Do things
+include(GoogleTest)
+
 # Create tests
-enable_testing()
 add_executable(first_test first_test.cpp)
 target_link_libraries(first_test networks2019 gtest)
-add_test(testie2 first_test)
+gtest_add_tests(TARGET first_test)
+#gtest_discover_tests(first_test)
+

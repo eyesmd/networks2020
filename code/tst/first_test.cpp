@@ -98,12 +98,12 @@ TEST(FirstTest, Dummy3) {
 }
 
 TEST(FirstTest, Dummy4) {
-    /*
-     * 4 nodes.
-     * From A you can go to B and C, and from B and C you can go to D.
-     * Earlier it's better to go to D through B, and later through C.
-     * It's expected that 'travel_times' has an arc from A to D reflecting that.
-     */
+    //
+    // 4 nodes.
+    // From A you can go to B and C, and from B and C you can go to D.
+    // Earlier it's better to go to D through B, and later through C.
+    // It's expected that 'travel_times' has an arc from A to D reflecting that.
+    //
 
     nlohmann::json digraph;
     digraph["vertex_count"] = 4;
